@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import PropTypes from "prop-types";
 
 import TargetList from "./components/TargetList";
 import SearchBox from "./components/SearchBox";
@@ -36,3 +37,10 @@ export default function App() {
 function Layout({ children }) {
   return <div className="my-3 mx-4">{children}</div>;
 }
+
+Layout.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node,
+  ]).isRequired,
+};
