@@ -57,7 +57,7 @@
       {
         "name": "targets",
         "type": "function",
-        "description": "Returns a list of available targets",
+        "description": "Returns a list of available targets. Won't validate targets.",
         "async": true,
         "parameters": []
       },
