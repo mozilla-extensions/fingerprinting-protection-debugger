@@ -17,11 +17,11 @@ module.exports = {
       "warn",
       { allowConstantExport: true },
     ],
-    "semi": [1, "always"],
-    "quotes": [1, "double"],
-    "comma-dangle": [1, "only-multiline"]
+    semi: [1, "always"],
+    quotes: [1, "double"],
+    "comma-dangle": [1, "only-multiline"],
   },
   globals: {
-    "browser": true,
-  }
+    browser: true,
+  },
 };

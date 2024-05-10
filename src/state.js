@@ -11,7 +11,7 @@ export const useStore = create(
       load: async () => {
         const invalidTargets = await browser.fppOverrides.invalidTargets();
         if (invalidTargets.length !== 0) {
-          set(state => {
+          set((state) => {
             state.targets.invalid = invalidTargets;
           });
           return;
