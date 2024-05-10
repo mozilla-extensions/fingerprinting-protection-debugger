@@ -6,12 +6,12 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: "i18n-hot-reload",
-      async buildStart(){
-        for(let file of ["public/api.mjs"]){
-            this.addWatchFile(file);
+      name: "hot-reload-exp-api",
+      async buildStart() {
+        for (let file of ["public/api.mjs"]) {
+          this.addWatchFile(file);
         }
-      }
+      },
     },
   ],
   build: {
