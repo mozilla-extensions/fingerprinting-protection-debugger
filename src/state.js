@@ -1,0 +1,49 @@
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+
+export const useStore = create(
+  immer((set) => ({
+    targets: {
+      overrides: {},
+      defaults: [],
+      targets: [],
+      load: async () => {
+        const defaults = await browser.fppOverrides.defaults();
+        const overrides = await browser.fppOverrides.get();
+        const targets = await browser.fppOverrides.targets();
+        set((state) => {
+          state.targets.overrides = overrides;
+          state.targets.defaults = defaults;
+          state.targets.targets = targets;
+        });
+      },
+      setOverride: async (name, enabled) => {
+        await browser.fppOverrides.set(name, enabled);
+        set((state) => {
+          state.targets.overrides[name] = enabled;
+        });
+      },
+      setAll: async (enabled) => {
+        await browser.fppOverrides.setAll(enabled);
+        set((state) => {
+          state.targets.overrides = Object.fromEntries(
+            state.targets.targets.map((t) => [t, enabled])
+          );
+        });
+      },
+      resetToDefaults: async () => {
+        await browser.fppOverrides.resetToDefaults();
+        set((state) => {
+          state.targets.overrides = Object.fromEntries(
+            state.targets.defaults.map((t) => [t, true])
+          );
+        });
+      },
+    },
+    searchQuery: "",
+    setSearchQuery: (query) =>
+      set((state) => {
+        state.searchQuery = query;
+      }),
+  }))
+);

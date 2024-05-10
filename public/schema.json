@@ -1,0 +1,66 @@
+[
+  {
+    "namespace": "fppOverrides",
+    "functions": [
+      {
+        "name": "get",
+        "type": "function",
+        "description": "Reads and parses privacy.fingerprintingProtection.overrides.",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "set",
+        "type": "function",
+        "description": "Modifies overrides to enable or disable target.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "A valid target name."
+          },
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "Determines whether we enable or disable it."
+          }
+        ]
+      },
+      {
+        "name": "setAll",
+        "type": "function",
+        "description": "Modifies overrides to enable or disable all of the targets.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "Determines whether we enable or disable."
+          }
+        ]
+      },
+      {
+        "name": "resetToDefaults",
+        "type": "function",
+        "description": "Modifies overrides to only enable defaults.",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "targets",
+        "type": "function",
+        "description": "Returns a list of available targets",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "defaults",
+        "type": "function",
+        "description": "Returns a list of default targets",
+        "async": true,
+        "parameters": []
+      }
+    ]
+  }
+]
