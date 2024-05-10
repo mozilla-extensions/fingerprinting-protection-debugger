@@ -7,9 +7,18 @@ export const useStore = create(
       overrides: {},
       defaults: [],
       targets: [],
+      invalid: [],
       load: async () => {
+        const invalidTargets = await browser.fppOverrides.invalidTargets();
+        if (invalidTargets.length !== 0) {
+          set(state => {
+            state.targets.invalid = invalidTargets;
+          });
+          return;
+        }
         const defaults = await browser.fppOverrides.defaults();
         const overrides = await browser.fppOverrides.get();
+        console.log(overrides);
         const targets = await browser.fppOverrides.targets();
         set((state) => {
           state.targets.overrides = overrides;

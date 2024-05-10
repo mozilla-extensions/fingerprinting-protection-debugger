@@ -41,6 +41,9 @@ this.fppOverrides = class extends ExtensionAPI {
         resetToDefaults() {
           setSerialized(serializeOverrides(DEFAULT_TARGETS));
         },
+        invalidTargets() {
+          return invalidTargets(Preferences.get(OVERRIDES_PREF));
+        },
         targets() {
           return Object.keys(TARGETS);
         },
@@ -122,7 +125,7 @@ const TARGETS = {
 
   // Hide AllTargets because it results in +/-AllTargets,+/-Target
   // which is not desired since we use checkboxes to indicate +/-
-  // and can't remove a target from the overrides.
+  // and it can create ambiguity in UI
   // AllTargets: false,
 };
 
@@ -132,13 +135,12 @@ const DEFAULT_TARGETS = Object.fromEntries(
 
 function deserializeOverrides(str) {
   const targets = {};
+  if (str.length === 0) {
+    return targets;
+  }
   for (let targetS of str.split(",")) {
     targetS = targetS.trim();
     const [op, target] = [targetS.slice(0, 1), targetS.slice(1)];
-    if (!["-", "+"].includes(op) || !TARGETS.hasOwnProperty(target)) {
-      console.warn("Invalid RFP target, skipping", target);
-      continue;
-    }
     targets[target] = op === "+";
   }
   return targets;
@@ -152,4 +154,23 @@ function serializeOverrides(targets) {
 
 function setSerialized(overrides) {
   Preferences.set(OVERRIDES_PREF, overrides);
+}
+
+function invalidTargets(str) {
+  const invalid = [];
+  if (str.length === 0) {
+    return invalid;
+  }
+  for (let targetS of str.split(",")) {
+    targetS = targetS.trim();
+    const [op, target] = [targetS.slice(0, 1), targetS.slice(1)];
+    if (!validateOverride(op, target)) {
+      invalid.push(op + target);
+    }
+  }
+  return invalid;
+}
+
+function validateOverride(op, target) {
+  return ["-", "+"].includes(op) && TARGETS.hasOwnProperty(target);
 }

@@ -48,6 +48,13 @@
         "parameters": []
       },
       {
+        "name": "invalidTargets",
+        "type": "function",
+        "description": "Validates the overrides and returns unknown targets.",
+        "async": true,
+        "parameters": []
+      },
+      {
         "name": "targets",
         "type": "function",
         "description": "Returns a list of available targets",
