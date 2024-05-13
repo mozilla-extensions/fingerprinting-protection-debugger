@@ -16,11 +16,11 @@ this.fppOverrides = class extends ExtensionAPI {
           const overrides = deserializeOverrides(
             Preferences.get(OVERRIDES_PREF)
           );
-          if (Object.keys(overrides).length === 0) {
-            this.defaults().forEach((t) => {
+          this.defaults().forEach((t) => {
+            if (!(t in overrides)) {
               overrides[t] = true;
-            });
-          }
+            }
+          });
           return overrides;
         },
         set(target, enabled) {
@@ -36,15 +36,13 @@ this.fppOverrides = class extends ExtensionAPI {
         setAll(enabled) {
           setSerialized(
             serializeOverrides(
-              Object.fromEntries(
-                Object.entries(TARGETS).map(([t]) => [t, enabled])
-              )
+              Object.fromEntries(TARGETS.map((t) => [t, enabled]))
             )
           );
         },
         resetToDefaults() {
           const overrides = serializeOverrides(
-            this.defaults().map((t) => [t, true])
+            Object.fromEntries(this.defaults().map((t) => [t, true]))
           );
           setSerialized(overrides);
         },
@@ -52,89 +50,21 @@ this.fppOverrides = class extends ExtensionAPI {
           return invalidTargets(Preferences.get(OVERRIDES_PREF));
         },
         targets() {
-          return Object.keys(TARGETS);
+          return TARGETS;
         },
         defaults() {
-          return RFPHelper.getTargetDefaults();
+          return DEFAULT_TARGETS;
         },
       },
     };
   }
 };
 
-const TARGETS = {
-  TouchEvents: false,
-  PointerEvents: false,
-  KeyboardEvents: false,
-  ScreenOrientation: false,
-  SpeechSynthesis: false,
-  CSSPrefersColorScheme: false,
-  CSSPrefersReducedMotion: false,
-  CSSPrefersContrast: false,
-  CanvasRandomization: false,
-  CanvasImageExtractionPrompt: false,
-  CanvasExtractionFromThirdPartiesIsBlocked: false,
-  CanvasExtractionBeforeUserInputIsBlocked: false,
-  JSLocale: false,
-  NavigatorAppVersion: false,
-  NavigatorBuildID: false,
-  NavigatorHWConcurrency: false,
-  NavigatorOscpu: false,
-  NavigatorPlatform: false,
-  NavigatorUserAgent: false,
-  StreamTrackLabel: false,
-  StreamVideoFacingMode: false,
-  JSDateTimeUTC: false,
-  JSMathFdlibm: false,
-  Gamepad: false,
-  HttpUserAgent: false,
-  WindowOuterSize: false,
-  WindowScreenXY: false,
-  WindowInnerScreenXY: false,
-  ScreenPixelDepth: false,
-  ScreenRect: false,
-  ScreenAvailRect: false,
-  VideoElementMozFrames: false,
-  VideoElementMozFrameDelay: false,
-  VideoElementPlaybackQuality: false,
-  ReduceTimerPrecision: false,
-  WidgetEvents: false,
-  MediaDevices: false,
-  MediaCapabilities: false,
-  AudioSampleRate: false,
-  NavigatorConnection: false,
-  WindowDevicePixelRatio: false,
-  MouseEventScreenPoint: false,
-  FontVisibilityBaseSystem: false,
-  FontVisibilityLangPack: false,
-  DeviceSensors: false,
-  FrameRate: false,
-  RoundWindowSize: false,
-  UseStandinsForNativeColors: false,
-  AudioContext: false,
-  MediaError: false,
-  DOMStyleOsxFontSmoothing: false,
-  CSSDeviceSize: false,
-  CSSColorInfo: false,
-  CSSResolution: false,
-  CSSPrefersReducedTransparency: false,
-  CSSInvertedColors: false,
-  CSSVideoDynamicRange: false,
-  CSSPointerCapabilities: false,
-  WebGLRenderCapability: false,
-  WebGLRenderInfo: false,
-  SiteSpecificZoom: false,
-  FontVisibilityRestrictGenerics: false,
-
-  // Hide IsAlwaysEnabledForPrecompute because overriding
-  // it may result in undefined behaviour
-  // IsAlwaysEnabledForPrecompute: false,
-
-  // Hide AllTargets because it results in +/-AllTargets,+/-Target
-  // which is not desired since we use checkboxes to indicate +/-
-  // and it can create ambiguity in UI
-  // AllTargets: false,
-};
+const DISABLED_TARGETS = ["IsAlwaysEnabledForPrecompute", "AllTargets"];
+const TARGETS = RFPHelper.getTargets().filter(
+  (t) => !DISABLED_TARGETS.includes(t)
+);
+const DEFAULT_TARGETS = RFPHelper.getTargetDefaults();
 
 function deserializeOverrides(str) {
   const targets = {};
@@ -151,6 +81,15 @@ function deserializeOverrides(str) {
 
 function serializeOverrides(targets) {
   return Object.entries(targets)
+    .filter(([target, enabled]) => {
+      if (
+        (enabled && DEFAULT_TARGETS.includes(target)) ||
+        (!enabled && !DEFAULT_TARGETS.includes(target))
+      ) {
+        return false;
+      }
+      return true;
+    })
     .map(([target, enabled]) => (enabled ? "+" : "-") + target)
     .join(",");
 }
@@ -175,5 +114,5 @@ function invalidTargets(str) {
 }
 
 function validateOverride(op, target) {
-  return ["-", "+"].includes(op) && TARGETS.hasOwnProperty(target);
+  return ["-", "+"].includes(op) && TARGETS.includes(target);
 }
