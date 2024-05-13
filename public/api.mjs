@@ -2,6 +2,10 @@ const { Preferences } = ChromeUtils.importESModule(
   "resource://gre/modules/Preferences.sys.mjs"
 );
 
+const { RFPHelper } = ChromeUtils.importESModule(
+  "resource://gre/modules/RFPHelper.sys.mjs"
+);
+
 const OVERRIDES_PREF = "privacy.fingerprintingProtection.overrides";
 
 this.fppOverrides = class extends ExtensionAPI {
@@ -39,7 +43,10 @@ this.fppOverrides = class extends ExtensionAPI {
           );
         },
         resetToDefaults() {
-          setSerialized(serializeOverrides(DEFAULT_TARGETS));
+          const overrides = serializeOverrides(
+            this.defaults().map((t) => [t, true])
+          );
+          setSerialized(overrides);
         },
         invalidTargets() {
           return invalidTargets(Preferences.get(OVERRIDES_PREF));
@@ -48,7 +55,7 @@ this.fppOverrides = class extends ExtensionAPI {
           return Object.keys(TARGETS);
         },
         defaults() {
-          return Object.keys(DEFAULT_TARGETS);
+          return RFPHelper.getTargetDefaults();
         },
       },
     };
@@ -64,7 +71,7 @@ const TARGETS = {
   CSSPrefersColorScheme: false,
   CSSPrefersReducedMotion: false,
   CSSPrefersContrast: false,
-  CanvasRandomization: true,
+  CanvasRandomization: false,
   CanvasImageExtractionPrompt: false,
   CanvasExtractionFromThirdPartiesIsBlocked: false,
   CanvasExtractionBeforeUserInputIsBlocked: false,
@@ -99,7 +106,7 @@ const TARGETS = {
   WindowDevicePixelRatio: false,
   MouseEventScreenPoint: false,
   FontVisibilityBaseSystem: false,
-  FontVisibilityLangPack: true,
+  FontVisibilityLangPack: false,
   DeviceSensors: false,
   FrameRate: false,
   RoundWindowSize: false,
@@ -128,10 +135,6 @@ const TARGETS = {
   // and it can create ambiguity in UI
   // AllTargets: false,
 };
-
-const DEFAULT_TARGETS = Object.fromEntries(
-  Object.entries(TARGETS).filter(([, d]) => d)
-);
 
 function deserializeOverrides(str) {
   const targets = {};
