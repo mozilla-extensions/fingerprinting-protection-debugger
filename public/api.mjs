@@ -61,7 +61,7 @@ this.fppOverrides = class extends ExtensionAPI {
 };
 
 const DISABLED_TARGETS = ["IsAlwaysEnabledForPrecompute", "AllTargets"];
-const TARGETS = RFPHelper.getTargets().filter(
+const TARGETS = Object.keys(RFPHelper.getTargets()).filter(
   (t) => !DISABLED_TARGETS.includes(t)
 );
 const DEFAULT_TARGETS = RFPHelper.getTargetDefaults();
