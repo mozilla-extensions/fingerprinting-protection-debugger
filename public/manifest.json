@@ -1,14 +1,14 @@
 {
   "manifest_version": 2,
-  "name": "RFPTarget Overrider",
+  "name": "Fingerprinting Protection Debugger",
   "version": "1.0.0",
   "browser_action": {
-    "default_title": "RFPTarget Overrider",
+    "default_title": "Fingerprinting Protection Debugger",
     "default_popup": "index.html"
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "overridehelper@example.com"
+      "id": "fingerprinting-protection-debugger@example.com"
     }
   },
   "experiment_apis": {

@@ -16,6 +16,7 @@ export const useStore = create(
           });
           return;
         }
+
         const defaults = await browser.fppOverrides.defaults();
         const overrides = await browser.fppOverrides.get();
         const targets = await browser.fppOverrides.targets();

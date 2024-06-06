@@ -8,7 +8,11 @@ export default defineConfig({
     {
       name: "hot-reload-exp-api",
       async buildStart() {
-        for (let file of ["public/api.mjs"]) {
+        for (let file of [
+          "public/api.mjs",
+          "public/manifest.json",
+          "public/schema.json",
+        ]) {
           this.addWatchFile(file);
         }
       },

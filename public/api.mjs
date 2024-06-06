@@ -1,3 +1,5 @@
+/* global ChromeUtils, ExtensionAPI */
+
 const { Preferences } = ChromeUtils.importESModule(
   "resource://gre/modules/Preferences.sys.mjs"
 );
@@ -9,26 +11,20 @@ const { RFPHelper } = ChromeUtils.importESModule(
 const OVERRIDES_PREF = "privacy.fingerprintingProtection.overrides";
 
 this.fppOverrides = class extends ExtensionAPI {
-  getAPI(context) {
+  getAPI() {
     return {
       fppOverrides: {
         get() {
           const overrides = deserializeOverrides(
             Preferences.get(OVERRIDES_PREF)
           );
-          this.defaults().forEach((t) => {
-            if (!(t in overrides)) {
-              overrides[t] = true;
-            }
-          });
+          appendDefaults(overrides);
           return overrides;
         },
         set(target, enabled) {
           const overrides = this.get();
           if (Object.keys(overrides).length === 0) {
-            this.defaults().forEach((t) => {
-              overrides[t] = true;
-            });
+            appendDefaults(overrides);
           }
           overrides[target] = enabled;
           setSerialized(serializeOverrides(overrides));
@@ -41,10 +37,9 @@ this.fppOverrides = class extends ExtensionAPI {
           );
         },
         resetToDefaults() {
-          const overrides = serializeOverrides(
-            Object.fromEntries(this.defaults().map((t) => [t, true]))
-          );
-          setSerialized(overrides);
+          const overrides = {};
+          appendDefaults(overrides);
+          setSerialized(serializeOverrides(overrides));
         },
         invalidTargets() {
           return invalidTargets(Preferences.get(OVERRIDES_PREF));
@@ -96,6 +91,14 @@ function serializeOverrides(targets) {
 
 function setSerialized(overrides) {
   Preferences.set(OVERRIDES_PREF, overrides);
+}
+
+function appendDefaults(overrides) {
+  DEFAULT_TARGETS.forEach((t) => {
+    if (!(t in overrides)) {
+      overrides[t] = true;
+    }
+  });
 }
 
 function invalidTargets(str) {
