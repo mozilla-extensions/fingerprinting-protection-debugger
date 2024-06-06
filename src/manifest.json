@@ -1,8 +1,8 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Fingerprinting Protection Debugger",
-  "version": "1.0.0",
-  "action": {
+  "version": "0.1",
+  "browser_action": {
     "default_title": "Fingerprinting Protection Debugger",
     "default_popup": "index.html"
   },
