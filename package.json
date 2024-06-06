@@ -1,13 +1,33 @@
 {
-  "name": "rfp-target-overrider",
+  "name": "fingerprinting-protection-debugger",
+  "description": "Fingerprinting Protection Debugger Firefox Addon",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build": "npm run build-popup && npm run build-ext",
+    "lint": "web-ext lint --source-dir src",
     "build-popup": "vite build --emptyOutDir",
     "watch-popup": "NODE_ENV=development vite build --emptyOutDir --watch --mode development",
-    "lint-popup": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "watch-ext": "web-ext run --firefox=nightly --pref xpinstall.signatures.required=false --pref extensions.experiments.enabled=true --source-dir build --devtools"
+    "watch-ext": "web-ext run --firefox=nightly --pref xpinstall.signatures.required=false --pref extensions.experiments.enabled=true --source-dir build --devtools",
+    "build-ext": "web-ext build"
+  },
+  "webExt": {
+    "build": {
+      "overwriteDest": true,
+      "filename": "fingerprinting-protection-debugger.xpi"
+    },
+    "lint": {
+      "privileged": true
+    },
+    "sourceDir": "build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mozilla-extensions/fingerprinting-protection-debugger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mozilla-extensions/fingerprinting-protection-debugger/issues"
   },
   "dependencies": {
     "immer": "^10.1.1",
@@ -27,11 +47,10 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "vite": "^5.2.0",
-    "web-ext": "^7.11.0"
+    "vite-plugin-static-copy": "^1.0.5",
+    "web-ext": "^7.12.0"
   },
-  "description": "",
   "main": "vite.config.js",
-  "keywords": [],
-  "author": "",
-  "license": ""
+  "author": "Fatih Kilic",
+  "license": "MPL-2.0"
 }
