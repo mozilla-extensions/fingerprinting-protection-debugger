@@ -8,7 +8,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "fingerprinting-protection-debugger@example.com",
+      "id": "fingerprinting-protection-debugger@mozilla.com",
       "strict_min_version": "128.0"
     }
   },
