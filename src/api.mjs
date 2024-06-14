@@ -1,48 +1,72 @@
-/* global ChromeUtils, ExtensionAPI */
+/* global ChromeUtils, ExtensionAPI, Services */
 
-const { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
+const { ExtensionPreferencesManager } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionPreferencesManager.sys.mjs"
 );
+const { getSettingsAPI } = ExtensionPreferencesManager;
 
 const { RFPHelper } = ChromeUtils.importESModule(
   "resource://gre/modules/RFPHelper.sys.mjs"
 );
 
+const OVERRIDES_NAME = "fingerprintingProtection.overrides";
 const OVERRIDES_PREF = "privacy.fingerprintingProtection.overrides";
 
+ExtensionPreferencesManager.addSetting(OVERRIDES_NAME, {
+  prefNames: [OVERRIDES_PREF],
+
+  setCallback(value) {
+    return {
+      [OVERRIDES_PREF]: value,
+    };
+  },
+
+  getCallback() {
+    return Services.prefs.getStringPref(OVERRIDES_PREF);
+  },
+});
+
 this.fppOverrides = class extends ExtensionAPI {
-  getAPI() {
+  getAPI(context) {
+    const overridePrefApi = getSettingsAPI({
+      context,
+      name: OVERRIDES_NAME,
+    });
+
+    const setSerialized = async (value) => overridePrefApi.set({ value });
+
+    const getOverrides = async () =>
+      overridePrefApi.get(OVERRIDES_NAME).then((r) => r.value);
+
     return {
       fppOverrides: {
-        get() {
-          const overrides = deserializeOverrides(
-            Preferences.get(OVERRIDES_PREF)
-          );
+        async get() {
+          const overrides = deserializeOverrides(await getOverrides());
           appendDefaults(overrides);
           return overrides;
         },
-        set(target, enabled) {
-          const overrides = this.get();
+        async set(target, enabled) {
+          const overrides = await this.get();
           if (Object.keys(overrides).length === 0) {
             appendDefaults(overrides);
           }
           overrides[target] = enabled;
-          setSerialized(serializeOverrides(overrides));
+          await setSerialized(serializeOverrides(overrides));
         },
-        setAll(enabled) {
-          setSerialized(
+        async setAll(enabled) {
+          await setSerialized(
             serializeOverrides(
               Object.fromEntries(TARGETS.map((t) => [t, enabled]))
             )
           );
         },
-        resetToDefaults() {
+        async resetToDefaults() {
           const overrides = {};
           appendDefaults(overrides);
-          setSerialized(serializeOverrides(overrides));
+          await setSerialized(serializeOverrides(overrides));
         },
-        invalidTargets() {
-          return invalidTargets(Preferences.get(OVERRIDES_PREF));
+        async invalidTargets() {
+          return invalidTargets(await getOverrides());
         },
         targets() {
           return TARGETS;
@@ -87,10 +111,6 @@ function serializeOverrides(targets) {
     })
     .map(([target, enabled]) => (enabled ? "+" : "-") + target)
     .join(",");
-}
-
-function setSerialized(overrides) {
-  Preferences.set(OVERRIDES_PREF, overrides);
 }
 
 function appendDefaults(overrides) {
