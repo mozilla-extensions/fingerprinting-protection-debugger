@@ -4,21 +4,21 @@ import TargetCheckbox from "./TargetCheckbox";
 import { useStore } from "../state";
 
 export default function TargetList() {
-  const [query, { defaults, overrides, targets }] = useStore((state) => [
+  const [query, targets] = useStore((state) => [
     state.search.query,
     state.targets,
   ]);
 
   const list = useMemo(
     () =>
-      targets
+      targets.available
         .map((t) => ({
           name: t,
-          checked: Boolean(overrides[t]),
-          isDefault: defaults.includes(t),
+          checked: Boolean(targets.overrides[t]),
+          isDefault: targets.defaults.includes(t),
         }))
         .filter((t) => t.name.toLowerCase().includes(query.toLowerCase())),
-    [targets, defaults, overrides, query]
+    [targets, query]
   );
 
   return (

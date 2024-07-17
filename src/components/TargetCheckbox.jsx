@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useStore } from "../state";
 
 export default function TargetCheckbox({ name, checked, isDefault }) {
-  const setOverride = useStore((state) => state.targets.setOverride);
+  const setOverride = useStore((state) => state.targets.set);
   const setPreference = (e) => setOverride(name, e.target.checked);
 
   return (

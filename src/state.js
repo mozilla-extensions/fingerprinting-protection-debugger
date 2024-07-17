@@ -2,12 +2,13 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 export const useStore = create(
-  immer((set) => ({
+  immer((set, get) => ({
     targets: {
+      loaded: false,
       enabled: false,
       overrides: {},
       defaults: [],
-      targets: [],
+      available: [],
       invalid: [],
       load: async () => {
         const enabled = await browser.fppOverrides.enabled();
@@ -21,16 +22,17 @@ export const useStore = create(
 
         const defaults = await browser.fppOverrides.defaults();
         const overrides = await browser.fppOverrides.get();
-        const targets = await browser.fppOverrides.targets();
+        const available = await browser.fppOverrides.targets();
 
         set((state) => {
+          state.targets.loaded = true;
           state.targets.enabled = enabled;
           state.targets.overrides = overrides;
           state.targets.defaults = defaults;
-          state.targets.targets = targets;
+          state.targets.available = available;
         });
       },
-      setOverride: async (name, enabled) => {
+      set: async (name, enabled) => {
         await browser.fppOverrides.set(name, enabled);
 
         set((state) => {
@@ -42,7 +44,7 @@ export const useStore = create(
 
         set((state) => {
           state.targets.overrides = Object.fromEntries(
-            state.targets.targets.map((t) => [t, enabled])
+            state.targets.available.map((t) => [t, enabled])
           );
         });
       },
@@ -70,5 +72,40 @@ export const useStore = create(
           state.blockingMessage.message = message;
         }),
     },
+    troubleshooter: {
+      loaded: false,
+      range: [0, 0],
+      isTroubleshooting() {
+        const range = get().troubleshooter.range;
+        return range[0] !== 0 || range[1] !== 0;
+      },
+      load: async () => {
+        const range = await storage.get("troubleshooterRange", [0, 0]);
+
+        set((state) => {
+          state.troubleshooter.loaded = true;
+          state.troubleshooter.range = range;
+        });
+      },
+      setRange: async (start, end) => {
+        await storage.set({ troubleshooterRange: [start, end] });
+
+        set((state) => {
+          state.troubleshooter.range = [start, end];
+        });
+      },
+    },
   }))
 );
+
+const storage = {
+  // Just in case we want to use sync/session etc. in the future
+  storage: browser.storage.local,
+  async get(key, defaultValue = undefined) {
+    const data = await this.storage.get(key);
+    return data[key] ?? defaultValue;
+  },
+  async set(data) {
+    await this.storage.set(data);
+  },
+};

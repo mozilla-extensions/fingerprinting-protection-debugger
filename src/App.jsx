@@ -6,16 +6,13 @@ import SearchBox from "./components/SearchBox";
 import SetAllButtons from "./components/SetAllButtons";
 import BlockingMessage from "./components/BlockingMessage";
 import { useStore } from "./state";
+import Troubleshooter from "./components/Troubleshooter";
 
 export default function App() {
-  const [load, blockingMessage] = useStore((state) => [
-    state.targets.load,
+  const [targets, blockingMessage] = useStore((state) => [
+    state.targets,
     state.blockingMessage.message,
   ]);
-
-  useEffect(() => {
-    if (load) load();
-  }, [load]);
 
   if (blockingMessage) {
     return (
@@ -29,6 +26,7 @@ export default function App() {
   return (
     <Layout>
       <ReadinessChecker />
+      <Troubleshooter />
       <SetAllButtons />
       <div className="flex flex-col gap-1">
         <SearchBox />
@@ -42,17 +40,40 @@ function Layout({ children }) {
   return <div className="flex flex-col gap-2 m-3 w-fit">{children}</div>;
 }
 
+Layout.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node,
+  ]).isRequired,
+};
+
 function ReadinessChecker() {
-  const [targets, setBlockingMessage] = useStore((state) => [
+  const [targets, troubleshooter, setBlockingMessage] = useStore((state) => [
     state.targets,
+    state.troubleshooter,
     state.blockingMessage.set,
   ]);
 
   useEffect(() => {
+    if (!targets.loaded) targets.load();
+  }, [targets]);
+
+  useEffect(() => {
+    if (!troubleshooter.loaded) troubleshooter.load();
+  }, [troubleshooter]);
+
+  useEffect(() => {
+    const loaded = targets.loaded && troubleshooter.loaded;
+    if (!loaded) {
+      setBlockingMessage("Loading...");
+      return;
+    }
+
     if (!targets.enabled) {
       setBlockingMessage(
         "Fingerprinting protection is not enabled Enable it by setting privacy.fingerprintingProtection to true."
       );
+      return;
     }
 
     if (targets.invalid.length !== 0) {
@@ -61,20 +82,14 @@ function ReadinessChecker() {
           " " + targets.invalid.join(", ")
         }`
       );
+      return;
     }
 
-    const conditions = [targets.enabled, targets.invalid.length === 0];
+    const conditions = [targets.enabled, targets.invalid.length === 0, loaded];
     if (conditions.every((c) => c)) {
       setBlockingMessage("");
     }
-  }, [targets.enabled, targets.invalid, setBlockingMessage]);
+  }, [targets, troubleshooter, setBlockingMessage]);
 
   return null;
 }
-
-Layout.propTypes = {
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node,
-  ]).isRequired,
-};

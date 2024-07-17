@@ -22,5 +22,5 @@
       }
     }
   },
-  "permissions": ["mozillaAddons"]
+  "permissions": ["mozillaAddons", "storage"]
 }
