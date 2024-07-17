@@ -1,10 +1,10 @@
 # Fingerprinting Protection Debugger
 
-This is a Firefox extension to easily manage privacy.fingerprintingProtection.overrides using checkboxes. You can search, enable and disable specific targets or all of them at once. The extension is written with React. The experimental API is defined in [public/api.mjs](public/api.mjs).
+This is a Firefox extension to easily manage privacy.fingerprintingProtection.overrides using checkboxes. You can search, enable and disable specific targets or all of them at once. The extension is written with React. The experimental API is defined in [src/api.mjs](src/api.mjs).
 
 ### Test it locally
 
-To test the extension locally, you have to be using a local build with [c6d8284bd68b](https://hg.mozilla.org/mozilla-central/rev/8fae218a34cd) commit, or use Nightly 128.0a1 version and the versions after that. Checkout package.json for defined scripts. Ideally, you would run `npm run watch-popup` and `npm run watch-ext` during development/testing.
+To test the extension locally, you need at least Firefox 128.0a1 version. Checkout package.json for defined scripts. Ideally, you would run `npm run watch-popup` and `npm run watch-ext` during development/testing.
 
 ### Disabled Targets
 
