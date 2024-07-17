@@ -4,11 +4,13 @@ import { immer } from "zustand/middleware/immer";
 export const useStore = create(
   immer((set) => ({
     targets: {
+      enabled: false,
       overrides: {},
       defaults: [],
       targets: [],
       invalid: [],
       load: async () => {
+        const enabled = await browser.fppOverrides.enabled();
         const invalidTargets = await browser.fppOverrides.invalidTargets();
         if (invalidTargets.length !== 0) {
           set((state) => {
@@ -21,6 +23,7 @@ export const useStore = create(
         const overrides = await browser.fppOverrides.get();
         const targets = await browser.fppOverrides.targets();
         set((state) => {
+          state.targets.enabled = enabled;
           state.targets.overrides = overrides;
           state.targets.defaults = defaults;
           state.targets.targets = targets;
@@ -53,6 +56,11 @@ export const useStore = create(
     setSearchQuery: (query) =>
       set((state) => {
         state.searchQuery = query;
+      }),
+    blockingMessage: "",
+    setBlockingMessage: (message) =>
+      set((state) => {
+        state.blockingMessage = message;
       }),
   }))
 );

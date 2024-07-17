@@ -9,22 +9,26 @@ const { RFPHelper } = ChromeUtils.importESModule(
   "resource://gre/modules/RFPHelper.sys.mjs"
 );
 
+const FPP_NAME = "fingerprintingProtection";
+const FPP_PREF = "privacy.fingerprintingProtection";
 const OVERRIDES_NAME = "fingerprintingProtection.overrides";
 const OVERRIDES_PREF = "privacy.fingerprintingProtection.overrides";
 
 registerExtensionPrefSetting(OVERRIDES_NAME, OVERRIDES_PREF, "String");
+registerExtensionPrefSetting(FPP_NAME, FPP_PREF, "Bool");
 
 this.fppOverrides = class extends ExtensionAPI {
   getAPI(context) {
-    const { [OVERRIDES_NAME]: overridePrefApi } = extensionGetSettingsAPI(
-      context,
-      [OVERRIDES_NAME]
-    );
+    const { [FPP_NAME]: fppApi, [OVERRIDES_NAME]: overridesApi } =
+      extensionGetSettingsAPI(context, [FPP_NAME, OVERRIDES_NAME]);
 
     return {
       fppOverrides: {
+        async enabled() {
+          return fppApi.get();
+        },
         async get() {
-          const overrides = deserializeOverrides(await overridePrefApi.get());
+          const overrides = deserializeOverrides(await overridesApi.get());
           appendDefaults(overrides);
           return overrides;
         },
@@ -34,10 +38,10 @@ this.fppOverrides = class extends ExtensionAPI {
             appendDefaults(overrides);
           }
           overrides[target] = enabled;
-          await overridePrefApi.set(serializeOverrides(overrides));
+          await overridesApi.set(serializeOverrides(overrides));
         },
         async setAll(enabled) {
-          await overridePrefApi.set(
+          await overridesApi.set(
             serializeOverrides(
               Object.fromEntries(TARGETS.map((t) => [t, enabled]))
             )
@@ -46,10 +50,10 @@ this.fppOverrides = class extends ExtensionAPI {
         async resetToDefaults() {
           const overrides = {};
           appendDefaults(overrides);
-          await overridePrefApi.set(serializeOverrides(overrides));
+          await overridesApi.set(serializeOverrides(overrides));
         },
         async invalidTargets() {
-          return invalidTargets(await overridePrefApi.get());
+          return invalidTargets(await overridesApi.get());
         },
         targets() {
           return TARGETS;

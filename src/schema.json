@@ -3,6 +3,13 @@
     "namespace": "fppOverrides",
     "functions": [
       {
+        "name": "enabled",
+        "type": "function",
+        "description": "Returns privacy.fingerprintingProtection",
+        "async": true,
+        "parameters": []
+      },
+      {
         "name": "get",
         "type": "function",
         "description": "Reads and parses privacy.fingerprintingProtection.overrides.",
