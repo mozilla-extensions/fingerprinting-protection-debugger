@@ -5,7 +5,7 @@ import { useStore } from "../state";
 
 export default function TargetList() {
   const [query, { defaults, overrides, targets }] = useStore((state) => [
-    state.searchQuery,
+    state.search.query,
     state.targets,
   ]);
 

@@ -10,7 +10,7 @@ import { useStore } from "./state";
 export default function App() {
   const [load, blockingMessage] = useStore((state) => [
     state.targets.load,
-    state.blockingMessage,
+    state.blockingMessage.message,
   ]);
 
   useEffect(() => {
@@ -43,32 +43,31 @@ function Layout({ children }) {
 }
 
 function ReadinessChecker() {
-  const [enabled, invalidTargets, setBlockingMessage] = useStore((state) => [
-    state.targets.enabled,
-    state.targets.invalid,
-    state.setBlockingMessage,
+  const [targets, setBlockingMessage] = useStore((state) => [
+    state.targets,
+    state.blockingMessage.set,
   ]);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!targets.enabled) {
       setBlockingMessage(
         "Fingerprinting protection is not enabled Enable it by setting privacy.fingerprintingProtection to true."
       );
     }
 
-    if (invalidTargets.length !== 0) {
+    if (targets.invalid.length !== 0) {
       setBlockingMessage(
         `Overrides contains unsupported targets. Remove the following targets to use the extension: ${
-          " " + invalidTargets.join(", ")
+          " " + targets.invalid.join(", ")
         }`
       );
     }
 
-    const conditions = [enabled, invalidTargets.length === 0];
+    const conditions = [targets.enabled, targets.invalid.length === 0];
     if (conditions.every((c) => c)) {
       setBlockingMessage("");
     }
-  }, [enabled, invalidTargets, setBlockingMessage]);
+  }, [targets.enabled, targets.invalid, setBlockingMessage]);
 
   return null;
 }

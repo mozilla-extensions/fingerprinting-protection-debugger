@@ -22,7 +22,5 @@
       }
     }
   },
-  "permissions": [
-    "mozillaAddons"
-  ]
+  "permissions": ["mozillaAddons"]
 }
