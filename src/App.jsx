@@ -28,14 +28,16 @@ export default function App() {
   return (
     <Layout>
       <SetAllButtons />
-      <SearchBox />
-      <TargetList />
+      <div className="flex flex-col gap-1">
+        <SearchBox />
+        <TargetList />
+      </div>
     </Layout>
   );
 }
 
 function Layout({ children }) {
-  return <div className="my-3 mx-4">{children}</div>;
+  return <div className="flex flex-col gap-2 m-3 w-fit">{children}</div>;
 }
 
 Layout.propTypes = {

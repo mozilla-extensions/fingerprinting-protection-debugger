@@ -13,7 +13,7 @@ export default function SearchBox() {
       type="search"
       onChange={onQueryChange}
       value={query}
-      className="flex p-2 my-2 w-full rounded border"
+      className="p-2 w-full rounded border"
       placeholder="Search"
     />
   );

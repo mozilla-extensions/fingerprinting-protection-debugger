@@ -22,7 +22,7 @@ export default function TargetList() {
   );
 
   return (
-    <>
+    <div>
       {list.map((target) => (
         <TargetCheckbox
           key={target.name}
@@ -31,6 +31,6 @@ export default function TargetList() {
           isDefault={target.isDefault}
         />
       ))}
-    </>
+    </div>
   );
 }
