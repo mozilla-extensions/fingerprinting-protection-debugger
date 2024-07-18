@@ -1,4 +1,4 @@
-import { useStore } from "../state";
+import useStore from "../state";
 
 export default function SearchBox() {
   const search = useStore((state) => state.search);

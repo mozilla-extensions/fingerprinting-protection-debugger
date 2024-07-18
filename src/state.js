@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-export const useStore = create(
+export default create(
   immer((set, get) => ({
     targets: {
       loaded: false,
@@ -75,16 +75,23 @@ export const useStore = create(
     troubleshooter: {
       loaded: false,
       range: [0, 0],
+      beginningTargets: [],
+      message: "",
       isTroubleshooting() {
         const range = get().troubleshooter.range;
         return range[0] !== 0 || range[1] !== 0;
       },
       load: async () => {
         const range = await storage.get("troubleshooterRange", [0, 0]);
+        const beginningTargets = await storage.get(
+          "troubleshooterBeginningTargets",
+          []
+        );
 
         set((state) => {
           state.troubleshooter.loaded = true;
           state.troubleshooter.range = range;
+          state.troubleshooter.beginningTargets = beginningTargets;
         });
       },
       setRange: async (start, end) => {
@@ -94,6 +101,20 @@ export const useStore = create(
           state.troubleshooter.range = [start, end];
         });
       },
+      saveBeginningTargets: async () => {
+        const targets = Object.entries(get().targets.overrides)
+          .filter(([, enabled]) => enabled)
+          .map(([name]) => name);
+        await storage.set({ troubleshooterBeginningTargets: targets });
+
+        set((state) => {
+          state.troubleshooter.beginningTargets = targets;
+        });
+      },
+      setMessage: (message) =>
+        set((state) => {
+          state.troubleshooter.message = message;
+        }),
     },
   }))
 );

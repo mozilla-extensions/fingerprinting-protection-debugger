@@ -1,7 +1,6 @@
 import { useMemo } from "react";
-
+import useStore from "../state";
 import TargetCheckbox from "./TargetCheckbox";
-import { useStore } from "../state";
 
 export default function TargetList() {
   const [query, targets] = useStore((state) => [

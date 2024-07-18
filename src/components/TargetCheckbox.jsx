@@ -1,13 +1,16 @@
 import PropTypes from "prop-types";
-
-import { useStore } from "../state";
+import useStore from "../state";
 
 export default function TargetCheckbox({ name, checked, isDefault }) {
   const setOverride = useStore((state) => state.targets.set);
   const setPreference = (e) => setOverride(name, e.target.checked);
 
   return (
-    <div className={"flex gap-x-3 items-center px-1" + (isDefault ? " bg-yellow-200": "")}>
+    <div
+      className={
+        "flex gap-x-3 items-center px-1" + (isDefault ? " bg-yellow-200" : "")
+      }
+    >
       <input
         id={name}
         type="checkbox"

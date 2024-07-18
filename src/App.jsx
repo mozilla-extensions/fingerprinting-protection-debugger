@@ -1,16 +1,14 @@
-import { useEffect } from "react";
 import PropTypes from "prop-types";
-
-import TargetList from "./components/TargetList";
+import { useEffect } from "react";
+import BlockingMessage from "./components/BlockingMessage";
 import SearchBox from "./components/SearchBox";
 import SetAllButtons from "./components/SetAllButtons";
-import BlockingMessage from "./components/BlockingMessage";
-import { useStore } from "./state";
+import TargetList from "./components/TargetList";
 import Troubleshooter from "./components/Troubleshooter";
+import useStore from "./state";
 
 export default function App() {
-  const [targets, blockingMessage] = useStore((state) => [
-    state.targets,
+  const [blockingMessage] = useStore((state) => [
     state.blockingMessage.message,
   ]);
 
