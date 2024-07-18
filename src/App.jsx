@@ -69,14 +69,14 @@ function ReadinessChecker() {
 
     if (!targets.enabled) {
       setBlockingMessage(
-        "Fingerprinting protection is not enabled Enable it by setting privacy.fingerprintingProtection to true."
+        "Fingerprinting protection is not enabled. Enable it by setting privacy.fingerprintingProtection to true."
       );
       return;
     }
 
     if (targets.invalid.length !== 0) {
       setBlockingMessage(
-        `Overrides contains unsupported targets. Remove the following targets to use the extension: ${
+        `Overrides contain unsupported targets. Remove these targets to use the extension: ${
           " " + targets.invalid.join(", ")
         }`
       );

@@ -14,8 +14,8 @@ The goal of the troubleshooting mode is to find the breakage causing RFP target.
 
 Currently, two targets are disabled:
 
-- IsAlwaysEnabledForPrecompute: This target is used internally. [According to its definition](https://searchfox.org/mozilla-central/rev/fa86401b80f19afb6ed9bfca127ecc5e3a6f0cdc/toolkit/components/resistfingerprinting/RFPTargets.inc#101-110), inluding it in overrides may result in undefined behaviour.
-- AllTargets: Including AllTargets breaks the UI logic. An active target is shown with a checked checkbox, but if we include AllTargets, active targets shown would be incorrect. Instead we have an `Active All` and `Deactivate all` butto to quickly enable/disable all the targets.
+- IsAlwaysEnabledForPrecompute: This target is used internally. [According to its definition](https://searchfox.org/mozilla-central/rev/fa86401b80f19afb6ed9bfca127ecc5e3a6f0cdc/toolkit/components/resistfingerprinting/RFPTargets.inc#101-110), including it in overrides may result in undefined behavior.
+- AllTargets: Including AllTargets breaks the UI logic. An active target is shown with a checked checkbox, but if we include AllTargets, active targets shown would be incorrect. Instead we have an `Active All` and `Deactivate all` button to quickly enable/disable all the targets.
 
 ### Targets with yellow background
 

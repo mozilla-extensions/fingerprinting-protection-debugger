@@ -15,7 +15,7 @@ export default function SetAllButtons() {
         className="p-2 w-full text-sm bg-white border-t border-b border-gray-200"
         onClick={() => targets.setAll(false)}
       >
-        Deactive All
+        Deactivate All
       </button>
       <button
         className="p-2 w-full text-sm bg-white border border-gray-200 rounded-e-lg"
