@@ -2,10 +2,7 @@ import PropTypes from "prop-types";
 import BlockingMessage from "./components/BlockingMessage";
 import Notifications from "./components/Notifications";
 import ReadinessChecker from "./components/ReadinessChecker";
-import SearchBox from "./components/SearchBox";
-import SetAllButtons from "./components/SetAllButtons";
-import TargetList from "./components/TargetList";
-import Troubleshooter from "./components/Troubleshooter";
+import PageManager from "./components/PageManager";
 import useStore from "./state";
 
 export default function App() {
@@ -16,7 +13,6 @@ export default function App() {
   if (blockingMessage) {
     return (
       <Layout>
-        <ReadinessChecker />
         <BlockingMessage message={blockingMessage} />
       </Layout>
     );
@@ -24,20 +20,19 @@ export default function App() {
 
   return (
     <Layout>
-      <ReadinessChecker />
       <Notifications />
-      <Troubleshooter />
-      <SetAllButtons />
-      <div className="flex flex-col gap-1">
-        <SearchBox />
-        <TargetList />
-      </div>
+      <PageManager />
     </Layout>
   );
 }
 
 function Layout({ children }) {
-  return <div className="flex flex-col gap-2 m-3 w-fit">{children}</div>;
+  return (
+    <div className="flex flex-col gap-2 m-3 w-80">
+      <ReadinessChecker />
+      {children}
+    </div>
+  );
 }
 
 Layout.propTypes = {
