@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import useStore from "../state";
 
 export default function SearchBox() {
@@ -10,8 +11,12 @@ export default function SearchBox() {
       type="search"
       onChange={onQueryChange}
       value={search.query}
-      className="p-2 w-full rounded border"
+      className="p-1.5 w-full rounded border"
       placeholder="Search"
     />
   );
 }
+
+SearchBox.propTypes = {
+  className: PropTypes.string,
+};

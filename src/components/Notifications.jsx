@@ -11,7 +11,7 @@ export default function Notifications() {
 
 function Notification({ notification }) {
   return (
-    <div className="p-2 bg-blue-100 rounded flex justify-between gap-2">
+    <div className="p-1.5 bg-blue-100 rounded flex justify-between gap-2">
       <p className="break-all">{notification.message}</p>
       {notification.action && (
         <button

@@ -5,7 +5,7 @@ export default function Troubleshooter() {
 
   if (state.message !== "") {
     return (
-      <div className="p-2 w-full text-sm bg-white border border-gray-200 rounded-lg">
+      <div className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-lg">
         {state.message}
       </div>
     );
@@ -37,7 +37,7 @@ function StartButton() {
 
   return (
     <button
-      className="p-2 w-full text-sm bg-white border border-gray-200 rounded-lg"
+      className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-lg"
       onClick={start}
     >
       Troubleshoot Website
@@ -105,19 +105,19 @@ function NextButton() {
   return (
     <div className="inline-flex w-full" role="group">
       <button
-        className="p-2 w-full text-sm bg-white border border-gray-200 rounded-s-lg"
+        className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-s-lg"
         onClick={onSolved}
       >
         Solved
       </button>
       <button
-        className="p-2 w-full text-sm bg-white border-t border-b border-gray-200"
+        className="p-1.5 w-full text-sm bg-white border-t border-b border-gray-200"
         onClick={onNotSolved}
       >
         Not Solved
       </button>
       <button
-        className="p-2 w-full text-sm bg-white border border-gray-200 rounded-e-lg"
+        className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-e-lg"
         onClick={onCancel}
       >
         Cancel
