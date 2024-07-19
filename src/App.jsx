@@ -6,6 +6,7 @@ import SetAllButtons from "./components/SetAllButtons";
 import TargetList from "./components/TargetList";
 import Troubleshooter from "./components/Troubleshooter";
 import useStore from "./state";
+import Notifications from "./components/Notifications";
 
 export default function App() {
   const [blockingMessage] = useStore((state) => [
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <Layout>
       <ReadinessChecker />
+      <Notifications />
       <Troubleshooter />
       <SetAllButtons />
       <div className="flex flex-col gap-1">
@@ -46,11 +48,13 @@ Layout.propTypes = {
 };
 
 function ReadinessChecker() {
-  const [targets, troubleshooter, setBlockingMessage] = useStore((state) => [
-    state.targets,
-    state.troubleshooter,
-    state.blockingMessage.set,
-  ]);
+  const [targets, troubleshooter, setBlockingMessage, notifications] =
+    useStore((state) => [
+      state.targets,
+      state.troubleshooter,
+      state.blockingMessage.set,
+      state.notifications,
+    ]);
 
   useEffect(() => {
     if (!targets.loaded) targets.load();
@@ -68,26 +72,32 @@ function ReadinessChecker() {
     }
 
     if (!targets.enabled) {
-      setBlockingMessage(
-        "Fingerprinting protection is not enabled. Enable it by setting privacy.fingerprintingProtection to true."
-      );
-      return;
+      const id = "fpp-not-enabled";
+      notifications.add({
+        id,
+        message: "Fingerprinting protection is not enabled!",
+        action: async () => {
+          await targets.enable();
+          notifications.remove(id);
+        },
+        actionLabel: "Enable",
+      });
     }
 
     if (targets.invalid.length !== 0) {
-      setBlockingMessage(
-        `Overrides contain unsupported targets. Remove these targets to use the extension: ${
+      notifications.add({
+        id: "unsupported-targets",
+        message: `Overrides contain the following unsupported targets, ${
           " " + targets.invalid.join(", ")
-        }`
-      );
-      return;
+        }. The extension will erase them when you make changes.`,
+      });
     }
 
-    const conditions = [targets.enabled, targets.invalid.length === 0, loaded];
+    const conditions = [loaded];
     if (conditions.every((c) => c)) {
       setBlockingMessage("");
     }
-  }, [targets, troubleshooter, setBlockingMessage]);
+  }, [targets, troubleshooter, setBlockingMessage, notifications]);
 
   return null;
 }

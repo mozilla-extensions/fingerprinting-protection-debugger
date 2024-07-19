@@ -17,7 +17,6 @@ export default create(
           set((state) => {
             state.targets.invalid = invalidTargets;
           });
-          return;
         }
 
         const defaults = await browser.fppOverrides.defaults();
@@ -55,6 +54,13 @@ export default create(
           state.targets.overrides = Object.fromEntries(
             state.targets.defaults.map((t) => [t, true])
           );
+        });
+      },
+      enable: async () => {
+        await browser.fppOverrides.enable();
+
+        set((state) => {
+          state.targets.enabled = true;
         });
       },
     },
@@ -114,6 +120,27 @@ export default create(
       setMessage: (message) =>
         set((state) => {
           state.troubleshooter.message = message;
+        }),
+    },
+    notifications: {
+      notifications: [],
+      add: (notification) => {
+        if (
+          get().notifications.notifications.find(
+            (n) => n.id === notification.id
+          )
+        ) {
+          return;
+        }
+
+        set((state) => {
+          state.notifications.notifications.push(notification);
+        });
+      },
+      remove: (id) =>
+        set((state) => {
+          state.notifications.notifications =
+            state.notifications.notifications.filter((n) => n.id !== id);
         }),
     },
   }))

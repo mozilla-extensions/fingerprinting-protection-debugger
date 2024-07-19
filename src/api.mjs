@@ -24,6 +24,9 @@ this.fppOverrides = class extends ExtensionAPI {
 
     return {
       fppOverrides: {
+        async enable() {
+          await fppApi.set(true);
+        },
         async enabled() {
           return fppApi.get();
         },
