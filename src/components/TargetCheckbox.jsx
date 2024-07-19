@@ -2,8 +2,17 @@ import PropTypes from "prop-types";
 import useStore from "../state";
 
 export default function TargetCheckbox({ name, checked, isDefault }) {
-  const setOverride = useStore((state) => state.targets.set);
-  const setPreference = (e) => setOverride(name, e.target.checked);
+  const [overrideScope, setOverride, setGranularOverride] = useStore(
+    (state) => [
+      state.targets.overrideScope,
+      state.targets.set,
+      state.targets.setGranularOverride,
+    ]
+  );
+  const setPreference = (e) =>
+    overrideScope === "all"
+      ? setOverride(name, e.target.checked)
+      : setGranularOverride(location.hostname, name, e.target.checked);
 
   return (
     <div

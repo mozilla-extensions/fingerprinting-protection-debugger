@@ -10,6 +10,8 @@ export default create(
       defaults: [],
       available: [],
       invalid: [],
+      overrideScope: "all",
+      granularOverrides: [],
       load: async () => {
         const enabled = await browser.fppOverrides.enabled();
         const invalidTargets = await browser.fppOverrides.invalidTargets();
@@ -21,14 +23,19 @@ export default create(
 
         const defaults = await browser.fppOverrides.defaults();
         const overrides = await browser.fppOverrides.get();
+        const granularOverrides =
+          await browser.fppOverrides.getGranularOverrides();
         const available = await browser.fppOverrides.targets();
+        const overrideScope = await storage.get("targetsOverrideScore", "all");
 
         set((state) => {
           state.targets.loaded = true;
           state.targets.enabled = enabled;
           state.targets.overrides = overrides;
+          state.targets.granularOverrides = granularOverrides;
           state.targets.defaults = defaults;
           state.targets.available = available;
+          state.targets.overrideScope = overrideScope;
         });
       },
       set: async (name, enabled) => {
@@ -36,6 +43,25 @@ export default create(
 
         set((state) => {
           state.targets.overrides[name] = enabled;
+        });
+      },
+      setGranularOverride: async (domain, name, enabled) => {
+        await browser.fppOverrides.setGranularOverride(domain, name, enabled);
+
+        set((state) => {
+          const granularOverrides = state.targets.granularOverrides;
+          const entryIndex = granularOverrides.findIndex(
+            (e) => e.firstPartyDomain === domain
+          );
+          if (entryIndex === -1) {
+            granularOverrides.push({
+              firstPartyDomain: domain,
+              thirdPartyDomain: "*",
+              overrides: {},
+            });
+          }
+          const entry = granularOverrides[entryIndex];
+          entry.overrides[name] = enabled;
         });
       },
       setAll: async (enabled) => {
@@ -61,6 +87,13 @@ export default create(
 
         set((state) => {
           state.targets.enabled = true;
+        });
+      },
+      setOverrideScope: async (scope) => {
+        await storage.set({ targetsOverrideScore: scope });
+
+        set((state) => {
+          state.targets.overrideScope = scope;
         });
       },
     },

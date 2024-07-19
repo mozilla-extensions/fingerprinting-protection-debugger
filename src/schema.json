@@ -24,11 +24,41 @@
         "parameters": []
       },
       {
+        "name": "getGranularOverrides",
+        "type": "function",
+        "description": "Reads and parses privacy.fingerprintingProtection.granularOverrides.",
+        "async": true,
+        "parameters": []
+      },
+      {
         "name": "set",
         "type": "function",
         "description": "Modifies overrides to enable or disable target.",
         "async": true,
         "parameters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "A valid target name."
+          },
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "Determines whether we enable or disable it."
+          }
+        ]
+      },
+      {
+        "name": "setGranularOverrides",
+        "type": "function",
+        "description": "Modifies granularOverrides to enable or disable target.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "A valid domain name for firstPartyDomain."
+          },
           {
             "name": "target",
             "type": "string",

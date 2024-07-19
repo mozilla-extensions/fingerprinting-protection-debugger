@@ -11,7 +11,7 @@ export default function PageManager() {
         {tabs.map((t, i) => (
           <button
             key={i}
-            className={tab === i && "border-b-2 border-black"}
+            className={tab === i ? "border-b-2 border-black" : ""}
             onClick={() => setTab(i)}
           >
             {t.name}
