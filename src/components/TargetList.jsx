@@ -8,26 +8,18 @@ export default function TargetList() {
     state.targets,
   ]);
 
-  const list = useMemo(
-    () =>
-      targets.available
-        .map((t) => ({
-          name: t,
-          checked: Boolean(targets.overrides[t]),
-          isDefault: targets.defaults.includes(t),
-        }))
-        .filter((t) => t.name.toLowerCase().includes(query.toLowerCase())),
-    [targets, query]
-  );
+  const list = useMemo(() => {
+    return targets.available.filter((t) =>
+      t.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [targets, query]);
 
   return (
     <div>
-      {list.map((target) => (
+      {list.map((name) => (
         <TargetCheckbox
-          key={target.name}
-          name={target.name}
-          checked={target.checked}
-          isDefault={target.isDefault}
+          key={name}
+          name={name}
         />
       ))}
     </div>

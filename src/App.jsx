@@ -28,7 +28,7 @@ export default function App() {
 
 function Layout({ children }) {
   return (
-    <div className="flex flex-col gap-2 m-3 w-80">
+    <div className="flex flex-col gap-2 m-3 w-96">
       <ReadinessChecker />
       {children}
     </div>

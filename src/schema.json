@@ -21,14 +21,13 @@
         "type": "function",
         "description": "Reads and parses privacy.fingerprintingProtection.overrides.",
         "async": true,
-        "parameters": []
-      },
-      {
-        "name": "getGranularOverrides",
-        "type": "function",
-        "description": "Reads and parses privacy.fingerprintingProtection.granularOverrides.",
-        "async": true,
-        "parameters": []
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Optional domain option for granular overrides."
+          }
+        ]
       },
       {
         "name": "set",
@@ -45,29 +44,11 @@
             "name": "enabled",
             "type": "boolean",
             "description": "Determines whether we enable or disable it."
-          }
-        ]
-      },
-      {
-        "name": "setGranularOverrides",
-        "type": "function",
-        "description": "Modifies granularOverrides to enable or disable target.",
-        "async": true,
-        "parameters": [
+          },
           {
             "name": "domain",
             "type": "string",
-            "description": "A valid domain name for firstPartyDomain."
-          },
-          {
-            "name": "target",
-            "type": "string",
-            "description": "A valid target name."
-          },
-          {
-            "name": "enabled",
-            "type": "boolean",
-            "description": "Determines whether we enable or disable it."
+            "description": "Optional domain option for granular overrides."
           }
         ]
       },
@@ -81,6 +62,42 @@
             "name": "enabled",
             "type": "boolean",
             "description": "Determines whether we enable or disable."
+          },
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Optional domain option for granular overrides."
+          }
+        ]
+      },
+      {
+        "name": "removeGranularTarget",
+        "type": "function",
+        "description": "Removes a granular target from the given domain. Unlike set, this function will not add -Target to overrides.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "A valid target name."
+          },
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
+          }
+        ]
+      },
+      {
+        "name": "clearGranularTargets",
+        "type": "function",
+        "description": "Clears all the overrides from the given domain.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
           }
         ]
       },
@@ -89,7 +106,13 @@
         "type": "function",
         "description": "Modifies overrides to only enable defaults.",
         "async": true,
-        "parameters": []
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Optional domain option for granular overrides."
+          }
+        ]
       },
       {
         "name": "invalidTargets",

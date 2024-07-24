@@ -37,6 +37,49 @@ this.fppOverrides = class extends ExtensionAPI {
       GRANULAR_OVERRIDES_NAME,
     ]);
 
+    const updateOverridesByScope = async (overrides, domain) => {
+      if (domain) {
+        const entries = deserializeGranularOverrides(
+          await granularOverridesApi.get()
+        );
+        const entryI = entries.findIndex((e) => e.firstPartyDomain === domain);
+        if (entryI === -1) {
+          entries.push({
+            firstPartyDomain: domain,
+            thirdPartyDomain: "*",
+            overrides: {},
+          });
+        }
+        const entry = entries[entryI === -1 ? entries.length - 1 : entryI];
+        entry.overrides = overrides;
+        const isEmpty = false;
+        if (isEmpty) {
+          entries.splice(entryI, 1);
+        }
+        await granularOverridesApi.set(serializeGranularOverrides(entries));
+      } else {
+        await overridesApi.set(serializeOverrides(overrides));
+      }
+    };
+
+    const getGranularOverrides = async (domain) => {
+      const entries = deserializeGranularOverrides(
+        await granularOverridesApi.get()
+      );
+      const entry = entries.find((e) => e.firstPartyDomain === domain);
+      if (entry) {
+        return entry.overrides;
+      }
+      const overrides = {};
+      return overrides;
+    };
+
+    const getOverrides = async () => {
+      const overrides = deserializeOverrides(await overridesApi.get());
+      appendDefaults(overrides);
+      return overrides;
+    };
+
     return {
       fppOverrides: {
         async enable() {
@@ -45,55 +88,50 @@ this.fppOverrides = class extends ExtensionAPI {
         async enabled() {
           return fppApi.get();
         },
-        async get() {
-          const overrides = deserializeOverrides(await overridesApi.get());
-          appendDefaults(overrides);
-          return overrides;
+        async get(domain) {
+          const global = await getOverrides();
+          const granular = await getGranularOverrides(domain);
+
+          Object.keys(global)
+            .filter((r) => !TARGETS.has(r))
+            .forEach((r) => delete global[r]);
+
+          Object.keys(granular)
+            .filter((r) => !TARGETS.has(r))
+            .forEach((r) => delete granular[r]);
+
+          return { global, granular };
         },
-        async getGranularOverrides() {
-          return deserializeGranularOverrides(await granularOverridesApi.get());
-        },
-        async set(target, enabled) {
-          const overrides = await this.get();
-          if (Object.keys(overrides).length === 0) {
-            appendDefaults(overrides);
-          }
+        async set(target, enabled, domain) {
+          const { global, granular } = await this.get(domain);
+          const overrides = domain ? granular : global;
           overrides[target] = enabled;
-          await overridesApi.set(serializeOverrides(overrides));
+          await updateOverridesByScope(overrides, domain);
         },
-        async setGranularOverride(domain, target, enabled) {
-          const entries = await this.getGranularOverrides();
-          const entryIndex = entries.findIndex(
-            (e) => e.firstPartyDomain === domain
+        async setAll(enabled, domain) {
+          const overrides = Object.fromEntries(
+            [...TARGETS].map((t) => [t, enabled])
           );
-          if (entryIndex === -1) {
-            entries.push({
-              firstPartyDomain: domain,
-              thirdPartyDomain: "*",
-              overrides: {},
-            });
-          }
-          const entry = entries[entryIndex];
-          entry.overrides[target] = enabled;
-          await granularOverridesApi.set(serializeGranularOverrides(entries));
+          await updateOverridesByScope(overrides, domain);
         },
-        async setAll(enabled) {
-          await overridesApi.set(
-            serializeOverrides(
-              Object.fromEntries(TARGETS.map((t) => [t, enabled]))
-            )
-          );
+        async removeGranularTarget(name, domain) {
+          const { granular } = await this.get(domain);
+          delete granular[name];
+          await updateOverridesByScope(granular, domain);
         },
-        async resetToDefaults() {
+        async clearGranularTargets(domain) {
+          await updateOverridesByScope({}, domain);
+        },
+        async resetToDefaults(domain) {
           const overrides = {};
           appendDefaults(overrides);
-          await overridesApi.set(serializeOverrides(overrides));
+          await updateOverridesByScope(overrides, domain);
         },
         async invalidTargets() {
           return invalidTargets(await overridesApi.get());
         },
         targets() {
-          return TARGETS;
+          return [...TARGETS];
         },
         defaults() {
           return DEFAULT_TARGETS;
@@ -104,8 +142,10 @@ this.fppOverrides = class extends ExtensionAPI {
 };
 
 const DISABLED_TARGETS = ["IsAlwaysEnabledForPrecompute", "AllTargets"];
-const TARGETS = Object.keys(RFPHelper.getTargets()).filter(
-  (t) => !DISABLED_TARGETS.includes(t)
+const TARGETS = new Set(
+  Object.keys(RFPHelper.getTargets()).filter(
+    (t) => !DISABLED_TARGETS.includes(t)
+  )
 );
 const DEFAULT_TARGETS = RFPHelper.getTargetDefaults();
 
@@ -122,17 +162,18 @@ function deserializeOverrides(str) {
   return targets;
 }
 
-function serializeOverrides(targets) {
+function filterNegatives(overrides) {
+  return Object.fromEntries(
+    Object.entries(overrides).filter(
+      ([t, enabled]) => DEFAULT_TARGETS.includes(t) || enabled
+    )
+  );
+}
+
+function serializeOverrides(targets, skipNegatives = false) {
+  targets = skipNegatives ? targets : filterNegatives(targets, skipNegatives);
+
   return Object.entries(targets)
-    .filter(([target, enabled]) => {
-      if (
-        (enabled && DEFAULT_TARGETS.includes(target)) ||
-        (!enabled && !DEFAULT_TARGETS.includes(target))
-      ) {
-        return false;
-      }
-      return true;
-    })
     .map(([target, enabled]) => (enabled ? "+" : "-") + target)
     .join(",");
 }
@@ -146,7 +187,6 @@ function deserializeGranularOverrides(str) {
     const unsanitized = JSON.parse(str);
     for (const entry of unsanitized) {
       const overrides = deserializeOverrides(entry.overrides);
-      appendDefaults(overrides);
 
       // Setting both to "*" makes the entry invalid
       // and it will be ignored by nsRFPService.
@@ -168,7 +208,7 @@ function deserializeGranularOverrides(str) {
 function serializeGranularOverrides(entries) {
   return JSON.stringify(
     entries.map((entry) => {
-      const overrides = serializeOverrides(entry.overrides);
+      const overrides = serializeOverrides(entry.overrides, true);
       return {
         firstPartyDomain: entry.firstPartyDomain,
         thirdPartyDomain: entry.thirdPartyDomain,
@@ -202,7 +242,7 @@ function invalidTargets(str) {
 }
 
 function validateOverride(op, target) {
-  return ["-", "+"].includes(op) && TARGETS.includes(target);
+  return ["-", "+"].includes(op) && TARGETS.has(target);
 }
 
 function registerExtensionPrefSetting(name, pref, type) {

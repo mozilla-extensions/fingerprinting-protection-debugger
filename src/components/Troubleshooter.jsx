@@ -29,6 +29,7 @@ function StartButton() {
     await troubleshooter.setRange(range[0], range[1]);
     await troubleshooter.saveBeginningTargets();
     await targets.setAll(false);
+    await targets.clearGranularTargets();
     const newOverrides = half(range, targets.available, "left");
     newOverrides.forEach((target) => {
       targets.set(target, true);
@@ -60,7 +61,7 @@ function NextButton() {
 
   const onSolved = async () => {
     const direction =
-      whichHalf(troubleshooter.range, targets.available, targets.overrides) ===
+      whichHalf(troubleshooter.range, targets.available, targets.global) ===
       "left"
         ? "right"
         : "left";
@@ -84,7 +85,7 @@ function NextButton() {
 
   const onNotSolved = async () => {
     const direction =
-      whichHalf(troubleshooter.range, targets.available, targets.overrides) ===
+      whichHalf(troubleshooter.range, targets.available, targets.global) ===
       "left"
         ? "left"
         : "right";
@@ -96,9 +97,16 @@ function NextButton() {
 
   const onCancel = async () => {
     await targets.setAll(false);
-    troubleshooter.beginningTargets.forEach((target) => {
-      targets.set(target, true);
-    });
+    Object.entries(troubleshooter.beginningTargets.global).forEach(
+      ([target, enabled]) => {
+        targets.set(target, enabled, false);
+      }
+    );
+    Object.entries(troubleshooter.beginningTargets.granular).forEach(
+      ([target, enabled]) => {
+        targets.set(target, enabled, true);
+      }
+    );
     await troubleshooter.setRange(0, 0);
   };
 

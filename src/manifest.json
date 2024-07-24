@@ -22,5 +22,5 @@
       }
     }
   },
-  "permissions": ["mozillaAddons", "storage"]
+  "permissions": ["mozillaAddons", "storage", "activeTab"]
 }
