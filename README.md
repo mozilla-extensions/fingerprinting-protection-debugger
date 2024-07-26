@@ -4,7 +4,7 @@ This is a Firefox extension to easily manage privacy.fingerprintingProtection.ov
 
 ### Test it locally
 
-To test the extension locally, you need at least Firefox 128.0a1 version. Checkout package.json for defined scripts. Ideally, you would run `npm run watch-popup` and `npm run watch-ext` during development/testing. Note that [src/api.mjs](src/api.mjs) is not updated automatically. While web-ext supports it, viteStaticCopy, the Vite extension used to copy [src/api.mjs](src/api.mjs) and its related files, doesn't watch files for updates.
+To test the extension locally, you need at least Firefox 128.0a1 version. Checkout package.json for defined scripts. Ideally, you would run `npm run watch-popup` and `npm run watch-ext` during development/testing.
 
 ### Troubleshooting mode
 

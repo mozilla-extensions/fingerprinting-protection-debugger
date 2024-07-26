@@ -22,5 +22,13 @@
       }
     }
   },
-  "permissions": ["mozillaAddons", "storage", "activeTab"]
+  "permissions": ["mozillaAddons", "storage", "activeTab"],
+  "icons": {
+    "16": "assets/fingerprint.svg",
+    "32": "assets/fingerprint.svg",
+    "48": "assets/fingerprint.svg",
+    "64": "assets/fingerprint.svg",
+    "96": "assets/fingerprint.svg",
+    "128": "assets/fingerprint.svg"
+  }
 }
