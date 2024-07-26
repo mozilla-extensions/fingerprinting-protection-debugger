@@ -1,11 +1,11 @@
-import useStore from "../state";
+import useStore from "../store";
 
 export default function Troubleshooter() {
   const state = useStore((state) => state.troubleshooter);
 
   if (state.message !== "") {
     return (
-      <div className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-lg">
+      <div className="p-1.5 w-full text-sm border rounded-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         {state.message}
       </div>
     );
@@ -25,20 +25,20 @@ function StartButton() {
   ]);
 
   const start = async () => {
-    const range = [0, targets.available.length - 1];
+    const range: [number, number] = [0, targets.available.length - 1];
     await troubleshooter.setRange(range[0], range[1]);
     await troubleshooter.saveBeginningTargets();
-    await targets.setAll(false);
-    await targets.clearGranularTargets();
+    await targets.setAll(false, false);
+    await targets.clear(true);
     const newOverrides = half(range, targets.available, "left");
-    newOverrides.forEach((target) => {
-      targets.set(target, true);
-    });
+    for (const target of newOverrides) {
+      await targets.set(target, true, false);
+    }
   };
 
   return (
     <button
-      className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-lg"
+      className="p-1.5 w-full text-sm border rounded-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
       onClick={start}
     >
       Troubleshoot Website
@@ -52,10 +52,10 @@ function NextButton() {
     state.targets,
   ]);
 
-  const setOverrides = async (newOverrides) => {
-    await targets.setAll(false);
+  const setOverrides = async (newOverrides: browser.fppOverrides.Target[]) => {
+    await targets.setAll(false, false);
     for (const target of newOverrides) {
-      await targets.set(target, true);
+      await targets.set(target, true, false);
     }
   };
 
@@ -71,7 +71,7 @@ function NextButton() {
       direction
     );
     if (newOverrides.length === 1) {
-      await troubleshooter.setMessage(
+      troubleshooter.setMessage(
         `Troubleshooting complete! ${newOverrides[0]} was causing the breakage.`
       );
       setTimeout(() => {
@@ -96,7 +96,7 @@ function NextButton() {
   };
 
   const onCancel = async () => {
-    await targets.setAll(false);
+    await targets.setAll(false, false);
     Object.entries(troubleshooter.beginningTargets.global).forEach(
       ([target, enabled]) => {
         targets.set(target, enabled, false);
@@ -113,19 +113,19 @@ function NextButton() {
   return (
     <div className="inline-flex w-full" role="group">
       <button
-        className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-s-lg"
+        className="p-1.5 w-full text-sm border rounded-s-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={onSolved}
       >
         Solved
       </button>
       <button
-        className="p-1.5 w-full text-sm bg-white border-t border-b border-gray-200"
+        className="p-1.5 w-full text-sm border-t border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={onNotSolved}
       >
         Not Solved
       </button>
       <button
-        className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-e-lg"
+        className="p-1.5 w-full text-sm border rounded-e-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={onCancel}
       >
         Cancel
@@ -135,7 +135,11 @@ function NextButton() {
 }
 
 // Returns which half of the targets were enabled during the last iteration
-function whichHalf(range, availableTargets, overrides) {
+function whichHalf(
+  range: [number, number],
+  availableTargets: browser.fppOverrides.Target[],
+  overrides: Record<browser.fppOverrides.Target, boolean>
+) {
   const mid = Math.floor((range[0] + range[1]) / 2);
   if (overrides[availableTargets[mid]]) {
     return "left";
@@ -143,7 +147,10 @@ function whichHalf(range, availableTargets, overrides) {
   return "right";
 }
 
-function getRange(range, direction) {
+function getRange(
+  range: [number, number],
+  direction: "left" | "right"
+): [number, number] {
   const mid = Math.floor((range[0] + range[1]) / 2);
   let start = range[0];
   let end = mid;
@@ -155,7 +162,11 @@ function getRange(range, direction) {
 }
 
 // Returns the range and half of the available targets based on the direction and the range
-function half(range, availableTargets, direction) {
+function half(
+  range: [number, number],
+  availableTargets: browser.fppOverrides.Target[],
+  direction: "left" | "right"
+) {
   const [start, end] = getRange(range, direction);
   const half = [];
   for (let i = start; i <= end; i++) {

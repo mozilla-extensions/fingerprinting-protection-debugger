@@ -6,18 +6,6 @@ import { viteStaticCopy } from "vite-plugin-static-copy";
 export default defineConfig({
   plugins: [
     react(),
-    {
-      name: "hot-reload-exp-api",
-      async buildStart() {
-        for (let file of [
-          "public/api.mjs",
-          "public/manifest.json",
-          "public/schema.json",
-        ]) {
-          this.addWatchFile(file);
-        }
-      },
-    },
     viteStaticCopy({
       targets: [
         {

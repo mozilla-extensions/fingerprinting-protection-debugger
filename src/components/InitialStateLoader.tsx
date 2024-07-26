@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import useStore from "../state";
+import useStore from "../store";
 
-export default function ReadinessChecker() {
+export default function InitialStateLoader() {
   const [
     targets,
     troubleshooter,
@@ -17,61 +17,59 @@ export default function ReadinessChecker() {
   ]);
 
   // Load the targets and troubleshooter data
-  useEffect(
-    () => {
-      if (!targets.loaded) targets.load();
-      if (!troubleshooter.loaded) troubleshooter.load();
-    },
+  useEffect(() => {
+    if (!targets.ready) targets.load();
+    if (!troubleshooter.ready) troubleshooter.load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  }, []);
 
-  const loaded = targets.loaded && troubleshooter.loaded;
+  const ready = targets.ready && troubleshooter.ready;
   // Show a blocking message while the app is loading
   useEffect(() => {
-    if (!loaded) {
+    if (!ready) {
       setBlockingMessage("Loading...");
       return;
     }
 
     setBlockingMessage("");
-  }, [loaded, setBlockingMessage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   // Keep track of the active tab's domain
   useEffect(() => {
-    if (!loaded) return;
+    if (!ready) return;
 
-    const setActiveTabDomain = async (tab) => {
+    const setActiveTabDomain = async (tab: browser.tabs.Tab) => {
       if (!tab.url) return;
       const url = new URL(tab.url);
       if (!["http:", "https:"].includes(url.protocol)) {
+        const id = "non-http";
         notifications.add({
-          id: "non-http",
+          id,
           message: "This extension only works on HTTP and HTTPS sites.",
-          action: () => notifications.remove("non-http"),
+          action: () => notifications.remove(id),
           actionLabel: "Dismiss",
         });
         return;
       }
-      await activeTab.set(url.hostname);
-      await targets.loadOverrides(url.hostname);
+      activeTab.set(url.hostname);
     };
 
     browser.tabs
       .query({ active: true, lastFocusedWindow: true })
       .then(([tab]) => setActiveTabDomain(tab));
 
-    const listener = (_tabId, changeInfo, tab) => {
-      if (changeInfo.status === "complete") setActiveTabDomain(tab);
+    const listener = ({ tabId }: { tabId: number }) => {
+      browser.tabs.get(tabId).then(setActiveTabDomain);
     };
-    browser.tabs.onUpdated.addListener(listener);
+    browser.tabs.onActivated.addListener(listener);
 
-    return () => browser.tabs.onUpdated.removeListener(listener);
+    return () => browser.tabs.onActivated.removeListener(listener);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded]);
+  }, [ready]);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!ready) return;
 
     // Show a notification if fingerprinting protection is not enabled
     if (!targets.enabled) {
@@ -88,20 +86,22 @@ export default function ReadinessChecker() {
     }
 
     // Show a notification if unsupported targets are found
-    if (targets.invalid.length !== 0) {
+    if (targets.invalids.length !== 0) {
+      const id = "unsupported-targets";
       notifications.add({
-        id: "unsupported-targets",
-        message: `Unsupported targets were found (${targets.invalid.join(
+        id,
+        message: `Unsupported targets were found (${targets.invalids.join(
           ", "
         )}). The extension will erase them when you make changes.`,
-        action: () => {
-          targets.clearInvalidTargets();
-          notifications.remove("unsupported-targets");
+        action: async () => {
+          targets.clearInvalids();
+          notifications.remove(id);
         },
         actionLabel: "Dismiss",
       });
     }
-  }, [loaded, notifications, targets]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   return null;
 }

@@ -1,32 +1,32 @@
 import { useState } from "react";
-import useStore from "../state";
+import useStore from "../store";
 
 export default function SetAllButtons() {
   const [isGranular, setIsGranular] = useState(false);
   const targets = useStore((state) => state.targets);
 
   return (
-    <div className="inline-flex w-full" role="group">
+    <div className="inline-flex w-full" role="group" aria-label="Set all targets buttons">
       <button
-        className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-s-lg"
+        className="p-1.5 w-full text-sm border rounded-s-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={() => targets.setAll(true, isGranular)}
       >
         Enable All
       </button>
       <button
-        className="p-1.5 w-full text-sm bg-white border-t border-b border-gray-200"
+        className="p-1.5 w-full text-sm border-t border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={() => targets.setAll(false, isGranular)}
       >
         Disable All
       </button>
       <button
-        className="p-1.5 w-full text-sm bg-white border-t border-b border-gray-200"
+        className="p-1.5 w-full text-sm border-t border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={() => targets.resetToDefaults(isGranular)}
       >
         Defaults
       </button>
       <button
-        className="p-1.5 w-full text-sm bg-white border border-gray-200 rounded-e-lg"
+        className="p-1.5 w-full text-sm border rounded-e-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={() => setIsGranular(!isGranular)}
       >
         {isGranular ? "Domain" : "All Sites"}
