@@ -140,6 +140,19 @@
         ]
       },
       {
+        "name": "forgetWebsite",
+        "type": "function",
+        "description": "Forgets the website",
+        "async": true,
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain to be forgotten"
+          }
+        ]
+      },
+      {
         "name": "invalids",
         "type": "function",
         "description": "Validates the global overrides and returns unknown targets",

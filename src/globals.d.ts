@@ -31,6 +31,7 @@ declare global {
         domain: string,
         isGranular: boolean
       ): Promise<void>;
+      function forgetWebsite(domain: string): Promise<void>;
       function invalids(): Promise<string[]>;
       function available(): Promise<string[]>;
       function defaults(): Promise<Set<Target>>;

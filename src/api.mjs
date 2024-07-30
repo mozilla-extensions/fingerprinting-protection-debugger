@@ -9,6 +9,10 @@ const { RFPHelper } = ChromeUtils.importESModule(
   "resource://gre/modules/RFPHelper.sys.mjs"
 );
 
+const { ForgetAboutSite } = ChromeUtils.importESModule(
+  "resource://gre/modules/ForgetAboutSite.sys.mjs"
+);
+
 const DISABLED_TARGETS = new Set([
   "IsAlwaysEnabledForPrecompute",
   "AllTargets",
@@ -312,6 +316,12 @@ this.fppOverrides = class extends ExtensionAPI {
             domain,
             isGranular
           );
+        },
+        // Forgets the website
+        async forgetWebsite(domain) {
+          OverridesHelper.validateDomain(domain);
+
+          await ForgetAboutSite.removeDataFromBaseDomain(domain);
         },
         // Validates the global overrides and returns unknown targets
         invalids() {

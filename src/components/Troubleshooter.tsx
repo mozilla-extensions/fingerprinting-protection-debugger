@@ -47,9 +47,10 @@ function StartButton() {
 }
 
 function NextButton() {
-  const [troubleshooter, targets] = useStore((state) => [
+  const [troubleshooter, targets, domain] = useStore((state) => [
     state.troubleshooter,
     state.targets,
+    state.activeTab.domain,
   ]);
 
   const setOverrides = async (newOverrides: browser.fppOverrides.Target[]) => {
@@ -110,6 +111,10 @@ function NextButton() {
     await troubleshooter.setRange(0, 0);
   };
 
+  const forgetWebsite = async () => {
+    await browser.fppOverrides.forgetWebsite(domain);
+  };
+
   return (
     <div className="inline-flex w-full" role="group">
       <button
@@ -125,10 +130,16 @@ function NextButton() {
         Not Solved
       </button>
       <button
-        className="p-1.5 w-full text-sm border rounded-e-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+        className="p-1.5 w-full text-sm border border-t border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={onCancel}
       >
         Cancel
+      </button>
+      <button
+        className="p-1.5 w-full text-sm border rounded-e-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+        onClick={forgetWebsite}
+      >
+        Forget Website
       </button>
     </div>
   );
