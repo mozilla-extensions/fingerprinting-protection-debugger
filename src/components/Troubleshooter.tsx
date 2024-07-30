@@ -91,6 +91,23 @@ function NextButton() {
         ? "left"
         : "right";
     const newRange = getRange(troubleshooter.range, direction);
+    // Only one target was active previously and it is still not solved
+    // i.e. we don't have any other targets to disable
+    if (
+      newRange[0] === newRange[1] &&
+      troubleshooter.range[1] - troubleshooter.range[0] === 1
+    ) {
+      troubleshooter.setMessage(
+        `Troubleshooting complete! ${targets.available[troubleshooter.range[0]]} and ${
+          targets.available[troubleshooter.range[1]]
+        } was causing the breakage.`
+      );
+      setTimeout(() => {
+        troubleshooter.setMessage("");
+      }, 7500);
+      onCancel();
+      return;
+    }
     await troubleshooter.setRange(newRange[0], newRange[1]);
     const newOverrides = half(newRange, targets.available, direction);
     await setOverrides(newOverrides);
