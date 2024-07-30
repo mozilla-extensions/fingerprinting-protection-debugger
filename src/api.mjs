@@ -46,6 +46,26 @@ const OverridesHelper = {
       throw new Error("Invalid target");
     }
   },
+  // Validate domain and throw an error if it is invalid
+  validateDomain(domain) {
+    if (!domain || domain.length === 0) {
+      throw new Error("No domain");
+    }
+
+    if (domain === "*") {
+      return;
+    }
+
+    const uri = Services.io.newURI("https://" + domain);
+    console.error(JSON.stringify(uri));
+    if (uri.displayHost !== domain) {
+      throw new Error("Invalid domain");
+    }
+
+    if (!uri.schemeIs("https")) {
+      throw new Error("Invalid spec");
+    }
+  },
   // Serializes a map of targets to a string
   stringify(targets) {
     return Object.entries(targets)
@@ -222,6 +242,8 @@ this.fppOverrides = class extends ExtensionAPI {
         },
         // Reads and parses privacy.fingerprintingProtection.overrides
         async get(domain) {
+          OverridesHelper.validateDomain(domain);
+
           const global = await extAPI.overrides
             .get()
             .then(OverridesHelper.parse)
@@ -246,6 +268,8 @@ this.fppOverrides = class extends ExtensionAPI {
         // Modifies global or granular overrides to enable or disable a target
         async set(target, enabled, domain, isGranular) {
           OverridesHelper.validateTarget(target);
+          OverridesHelper.validateDomain(domain);
+
           const overrides = await this.get(domain);
           const targets = isGranular ? overrides.granular : overrides.global;
           targets[target] = enabled;
@@ -254,6 +278,8 @@ this.fppOverrides = class extends ExtensionAPI {
         },
         // Modifies overrides to enable or disable all of the targets
         async setAll(enabled, domain, isGranular) {
+          OverridesHelper.validateDomain(domain);
+
           const overrides = Object.fromEntries(
             [...TARGETS].map((t) => [t, enabled])
           );
@@ -263,6 +289,8 @@ this.fppOverrides = class extends ExtensionAPI {
         // Removes a target from the overrides. Unlike set, this function will not add -Target to overrides
         async remove(target, domain, isGranular) {
           OverridesHelper.validateTarget(target);
+          OverridesHelper.validateDomain(domain);
+
           const overrides = await this.get(domain);
           const targets = isGranular ? overrides.granular : overrides.global;
           delete targets[target];
@@ -271,10 +299,14 @@ this.fppOverrides = class extends ExtensionAPI {
         },
         // Clears all the overrides
         async clear(domain, isGranular) {
+          OverridesHelper.validateDomain(domain);
+
           await setTargetsByScope({}, domain, isGranular);
         },
         // Modifies overrides to only enable defaults
         async resetToDefaults(domain, isGranular) {
+          OverridesHelper.validateDomain(domain);
+
           await setTargetsByScope(
             OverridesHelper.appendDefaults({}),
             domain,
