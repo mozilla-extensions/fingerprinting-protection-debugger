@@ -40,6 +40,12 @@ const OverridesHelper = {
   validateEntry(op, target) {
     return ["-", "+"].includes(op) && TARGETS.has(target);
   },
+  // Validates a target and throws an error if it is invalid
+  validateTarget(target) {
+    if (!TARGETS.has(target)) {
+      throw new Error("Invalid target");
+    }
+  },
   // Serializes a map of targets to a string
   stringify(targets) {
     return Object.entries(targets)
@@ -239,6 +245,7 @@ this.fppOverrides = class extends ExtensionAPI {
         },
         // Modifies global or granular overrides to enable or disable a target
         async set(target, enabled, domain, isGranular) {
+          OverridesHelper.validateTarget(target);
           const overrides = await this.get(domain);
           const targets = isGranular ? overrides.granular : overrides.global;
           targets[target] = enabled;
@@ -254,10 +261,11 @@ this.fppOverrides = class extends ExtensionAPI {
           await setTargetsByScope(overrides, domain, isGranular);
         },
         // Removes a target from the overrides. Unlike set, this function will not add -Target to overrides
-        async remove(name, domain, isGranular) {
+        async remove(target, domain, isGranular) {
+          OverridesHelper.validateTarget(target);
           const overrides = await this.get(domain);
           const targets = isGranular ? overrides.granular : overrides.global;
-          delete targets[name];
+          delete targets[target];
 
           await setTargetsByScope(targets, domain, isGranular);
         },
