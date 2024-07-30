@@ -30,7 +30,7 @@ function StartButton() {
     await troubleshooter.saveBeginningTargets();
     await targets.setAll(false, false);
     await targets.clear(true);
-    const newOverrides = half(range, targets.available, "left");
+    const newOverrides = half(range, targets.available, "top");
     for (const target of newOverrides) {
       await targets.set(target, true, false);
     }
@@ -63,9 +63,9 @@ function NextButton() {
   const onSolved = async () => {
     const direction =
       whichHalf(troubleshooter.range, targets.available, targets.global) ===
-      "left"
-        ? "right"
-        : "left";
+      "top"
+        ? "bottom"
+        : "top";
     const newOverrides = half(
       troubleshooter.range,
       targets.available,
@@ -85,11 +85,11 @@ function NextButton() {
   };
 
   const onNotSolved = async () => {
-    const direction =
-      whichHalf(troubleshooter.range, targets.available, targets.global) ===
-      "left"
-        ? "left"
-        : "right";
+    const direction = whichHalf(
+      troubleshooter.range,
+      targets.available,
+      targets.global
+    );
     const newRange = getRange(troubleshooter.range, direction);
     // Only one target was active previously and it is still not solved
     // i.e. we don't have any other targets to disable
@@ -98,7 +98,9 @@ function NextButton() {
       troubleshooter.range[1] - troubleshooter.range[0] === 1
     ) {
       troubleshooter.setMessage(
-        `Troubleshooting complete! ${targets.available[troubleshooter.range[0]]} and ${
+        `Troubleshooting complete! ${
+          targets.available[troubleshooter.range[0]]
+        } and ${
           targets.available[troubleshooter.range[1]]
         } was causing the breakage.`
       );
@@ -170,19 +172,19 @@ function whichHalf(
 ) {
   const mid = Math.floor((range[0] + range[1]) / 2);
   if (overrides[availableTargets[mid]]) {
-    return "left";
+    return "top";
   }
-  return "right";
+  return "bottom";
 }
 
 function getRange(
   range: [number, number],
-  direction: "left" | "right"
+  direction: "top" | "bottom"
 ): [number, number] {
   const mid = Math.floor((range[0] + range[1]) / 2);
   let start = range[0];
   let end = mid;
-  if (direction === "right") {
+  if (direction === "bottom") {
     start = mid + 1;
     end = range[1];
   }
@@ -193,7 +195,7 @@ function getRange(
 function half(
   range: [number, number],
   availableTargets: browser.fppOverrides.Target[],
-  direction: "left" | "right"
+  direction: "top" | "bottom"
 ) {
   const [start, end] = getRange(range, direction);
   const half = [];
