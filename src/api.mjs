@@ -61,7 +61,6 @@ const OverridesHelper = {
     }
 
     const uri = Services.io.newURI("https://" + domain);
-    console.error(JSON.stringify(uri));
     if (uri.displayHost !== domain) {
       throw new Error("Invalid domain");
     }
