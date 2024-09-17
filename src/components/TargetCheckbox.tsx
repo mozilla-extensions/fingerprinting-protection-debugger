@@ -47,6 +47,7 @@ export default function TargetCheckbox({ target }: props) {
 
   // Disabled because we are removing the scope button.
   // We can use this code later if we decide to add it back.
+  // @ts-expect-error - disabled because we are removing the scope button
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const scopeButtonAriaLabel = wrongScope
     ? isGranular
