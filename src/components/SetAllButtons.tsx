@@ -1,8 +1,7 @@
-import { useState } from "react";
 import useStore from "../store";
 
 export default function SetAllButtons() {
-  const [isGranular, setIsGranular] = useState(false);
+  const isGranular = false;
   const targets = useStore((state) => state.targets);
 
   return (
@@ -20,16 +19,10 @@ export default function SetAllButtons() {
         Disable All
       </button>
       <button
-        className="p-1.5 w-full text-sm border-t border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+        className="p-1.5 w-full text-sm border rounded-e-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         onClick={() => targets.resetToDefaults(isGranular)}
       >
-        Defaults
-      </button>
-      <button
-        className="p-1.5 w-full text-sm border rounded-e-lg border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-        onClick={() => setIsGranular(!isGranular)}
-      >
-        {isGranular ? "Domain" : "All Sites"}
+        Restore to Defaults
       </button>
     </div>
   );

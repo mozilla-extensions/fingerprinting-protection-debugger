@@ -20,7 +20,3 @@ Currently, two targets are disabled:
 ### Targets with yellow background
 
 The yellow background indicate that target is enabled by default. Without `-<DefaultTargetName>` in overrides, they are enabled by default.
-
-### Target Scope
-
-RFP Targets can be set globally, as in applying to all websites, or granularly, as in applying to a specific website (a domain in specific). You can set the scope by clicking on the button next to the checkbox. The button's text color will be red when the RFP target was previously set granularly but the scope is set to all, or vice versa. When it is red, you won't be able to enable or disable the target until you switch the scope to correct one.

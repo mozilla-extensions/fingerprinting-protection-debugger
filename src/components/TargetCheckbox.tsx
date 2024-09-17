@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import useStore from "../store";
 import { splitCamelCase } from "../utils";
 
@@ -8,7 +8,7 @@ export default function TargetCheckbox({ target }: props) {
     state.targets.remove,
   ]);
   const checkboxRef = useRef<HTMLInputElement>(null);
-  const [isGranular, setIsGranular] = useState(false);
+  const isGranular = false;
 
   const wrongScope = target.isGranularlySet && !isGranular;
   const granularlyDisabled = target.isGranularlySet && !target.granular;
@@ -45,6 +45,9 @@ export default function TargetCheckbox({ target }: props) {
     setTarget(target.name, checkbox.checked, isGranular);
   }
 
+  // Disabled because we are removing the scope button.
+  // We can use this code later if we decide to add it back.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const scopeButtonAriaLabel = wrongScope
     ? isGranular
       ? "Current scope is domain. Click to change to all sites"
@@ -84,13 +87,6 @@ export default function TargetCheckbox({ target }: props) {
           {target.name}
         </label>
       </div>
-      <button
-        className={"text-sm" + (wrongScope ? " text-red-500" : "")}
-        onClick={() => setIsGranular(!isGranular)}
-        aria-label={scopeButtonAriaLabel}
-      >
-        {isGranular ? "Domain" : "All Sites"}
-      </button>
     </div>
   );
 }
