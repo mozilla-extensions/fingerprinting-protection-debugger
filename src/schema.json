@@ -3,61 +3,166 @@
     "namespace": "fppOverrides",
     "functions": [
       {
-        "name": "get",
+        "name": "enable",
         "type": "function",
-        "description": "Reads and parses privacy.fingerprintingProtection.overrides.",
+        "description": "Enables privacy.fingerprintingProtection",
         "async": true,
         "parameters": []
       },
       {
+        "name": "enabled",
+        "type": "function",
+        "description": "Returns privacy.fingerprintingProtection",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "get",
+        "type": "function",
+        "description": "Reads and parses privacy.fingerprintingProtection.overrides",
+        "async": true,
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
+          }
+        ]
+      },
+      {
         "name": "set",
         "type": "function",
-        "description": "Modifies overrides to enable or disable target.",
+        "description": "Modifies global or granular overrides to enable or disable a target",
         "async": true,
         "parameters": [
           {
             "name": "target",
             "type": "string",
-            "description": "A valid target name."
+            "description": "A valid target name"
           },
           {
             "name": "enabled",
             "type": "boolean",
-            "description": "Determines whether we enable or disable it."
+            "description": "Determines whether we enable or disable it"
+          },
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
+          },
+          {
+            "name": "isGranular",
+            "type": "boolean",
+            "description": "Determines whether we modify global or granular overrides"
           }
         ]
       },
       {
         "name": "setAll",
         "type": "function",
-        "description": "Modifies overrides to enable or disable all of the targets.",
+        "description": "Modifies overrides to enable or disable all of the targets",
         "async": true,
         "parameters": [
           {
             "name": "enabled",
             "type": "boolean",
-            "description": "Determines whether we enable or disable."
+            "description": "Determines whether we enable or disable"
+          },
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
+          },
+          {
+            "name": "isGranular",
+            "type": "boolean",
+            "description": "Determines whether we modify global or granular overrides"
+          }
+        ]
+      },
+      {
+        "name": "remove",
+        "type": "function",
+        "description": "Removes a target from the overrides. Unlike set, this function will not add -Target to overrides",
+        "async": true,
+        "parameters": [
+          {
+            "name": "target",
+            "type": "string",
+            "description": "A valid target name"
+          },
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
+          },
+          {
+            "name": "isGranular",
+            "type": "boolean",
+            "description": "Determines whether we modify global or granular overrides"
+          }
+        ]
+      },
+      {
+        "name": "clear",
+        "type": "function",
+        "description": "Clears all the overrides",
+        "async": true,
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
+          },
+          {
+            "name": "isGranular",
+            "type": "boolean",
+            "description": "Determines whether we modify global or granular overrides"
           }
         ]
       },
       {
         "name": "resetToDefaults",
         "type": "function",
-        "description": "Modifies overrides to only enable defaults.",
+        "description": "Modifies overrides to only enable defaults",
+        "async": true,
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain for the granular overrides"
+          },
+          {
+            "name": "isGranular",
+            "type": "boolean",
+            "description": "Determines whether we modify global or granular overrides"
+          }
+        ]
+      },
+      {
+        "name": "forgetWebsite",
+        "type": "function",
+        "description": "Forgets the website",
+        "async": true,
+        "parameters": [
+          {
+            "name": "domain",
+            "type": "string",
+            "description": "Domain to be forgotten"
+          }
+        ]
+      },
+      {
+        "name": "invalids",
+        "type": "function",
+        "description": "Validates the global overrides and returns unknown targets",
         "async": true,
         "parameters": []
       },
       {
-        "name": "invalidTargets",
+        "name": "available",
         "type": "function",
-        "description": "Validates the overrides and returns unknown targets.",
-        "async": true,
-        "parameters": []
-      },
-      {
-        "name": "targets",
-        "type": "function",
-        "description": "Returns a list of available targets. Won't validate targets.",
+        "description": "Returns a list of available targets",
         "async": true,
         "parameters": []
       },

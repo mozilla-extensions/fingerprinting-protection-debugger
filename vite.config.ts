@@ -9,10 +9,10 @@ export default defineConfig({
     {
       name: "hot-reload-exp-api",
       async buildStart() {
-        for (let file of [
-          "public/api.mjs",
-          "public/manifest.json",
-          "public/schema.json",
+        for (const file of [
+          "src/api.mjs",
+          "src/manifest.json",
+          "src/schema.json",
         ]) {
           this.addWatchFile(file);
         }
@@ -31,6 +31,10 @@ export default defineConfig({
         {
           src: "src/schema.json",
           dest: "",
+        },
+        {
+          src: "assets/fingerprint.svg",
+          dest: "assets",
         },
       ],
     }),
