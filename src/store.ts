@@ -111,6 +111,18 @@ export default create<StateType>()(
           state.targets.global = global;
           state.targets.granular = granular;
           state.activeTab.domain = domain;
+
+          // We currently don't expose the granular override support.
+          // Add a notification if granular overrides are found.
+          if (Object.keys(granular).length !== 0) {
+            state.notifications.list.push({
+              id: "granular-overrides",
+              message:
+                "Granular overrides are found. The extension does not support them yet.",
+              action: () => get().notifications.remove("granular-overrides"),
+              actionLabel: "Dismiss",
+            });
+          }
         });
       },
     },
