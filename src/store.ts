@@ -118,7 +118,7 @@ export default create<StateType>()(
             state.notifications.list.push({
               id: "granular-overrides",
               message:
-                "Granular overrides are found. The extension does not support them yet.",
+                "Granular overrides affecting this domain were found. The extension does not support them, and behavior may be unexpected.",
               action: () => get().notifications.remove("granular-overrides"),
               actionLabel: "Dismiss",
             });
