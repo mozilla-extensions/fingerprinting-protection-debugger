@@ -30,6 +30,7 @@
   "bugs": {
     "url": "https://github.com/mozilla-extensions/fingerprinting-protection-debugger/issues"
   },
+  "docker-image": "node-lts-latest",
   "dependencies": {
     "immer": "^10.1.1",
     "react": "^18.3.1",

@@ -8,7 +8,7 @@ const tabs = [{ name: "Home", component: <Home /> }];
 
 function App() {
   return (
-    <div className="flex flex-col gap-2 p-2 min-w-96 break-words font-sans bg-white dark:bg-slate-900 text-black dark:text-slate-200">
+    <div className="flex flex-col gap-2 p-2 w-96 break-words font-sans bg-white dark:bg-slate-900 text-black dark:text-slate-200">
       <InitialStateLoader />
       <BlockingMessage />
       <Notifications />
