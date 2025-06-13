@@ -10,7 +10,7 @@
     "watch-popup": "NODE_ENV=development vite build --emptyOutDir --watch --mode development",
     "watch-ext": "web-ext run --firefox=nightly --pref xpinstall.signatures.required=false --pref extensions.experiments.enabled=true --source-dir build --devtools",
     "build-ext": "web-ext build",
-    "extlint": "web-ext lint --source-dir src",
+    "extlint": "web-ext lint --source-dir build",
     "eslint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "webExt": {

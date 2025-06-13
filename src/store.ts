@@ -6,8 +6,7 @@ export default create<StateType>()(
     targets: {
       ready: false,
       enabled: false,
-      global: {},
-      granular: {},
+      overrides: {},
       defaults: new Set(),
       available: [],
       invalids: [],
@@ -31,69 +30,49 @@ export default create<StateType>()(
           state.targets.available = available;
         });
       },
-      async set(target, enabled, isGranular) {
-        await browser.fppOverrides.set(
-          target,
-          enabled,
-          get().activeTab.domain,
-          isGranular
-        );
+      async set(target, enabled) {
+        await browser.fppOverrides.set(target, enabled);
 
         set((state) => {
-          if (isGranular) {
-            state.targets.granular[target] = enabled;
+          if (enabled) {
+            state.targets.overrides[target] = enabled;
           } else {
-            if (enabled) {
-              state.targets.global[target] = enabled;
-            } else {
-              delete state.targets.global[target];
-            }
+            delete state.targets.overrides[target];
           }
         });
       },
-      async setAll(enabled, isGranular) {
-        await browser.fppOverrides.setAll(
-          enabled,
-          get().activeTab.domain,
-          isGranular
-        );
+      async setAll(enabled) {
+        await browser.fppOverrides.setAll(enabled);
         const allTargets = Object.fromEntries(
           get().targets.available.map((target) => [target, enabled])
         );
 
         set((state) => {
-          state.targets[isGranular ? "granular" : "global"] = allTargets;
+          state.targets.overrides = allTargets;
         });
       },
-      async resetToDefaults(isGranular) {
-        await browser.fppOverrides.resetToDefaults(
-          get().activeTab.domain,
-          isGranular
-        );
+      async resetToDefaults() {
+        await browser.fppOverrides.resetToDefaults();
         const defaults = Object.fromEntries(
           [...get().targets.defaults].map((t) => [t, true])
         );
 
         set((state) => {
-          state.targets[isGranular ? "granular" : "global"] = defaults;
+          state.targets.overrides = defaults;
         });
       },
-      async remove(name, isGranular) {
-        await browser.fppOverrides.remove(
-          name,
-          get().activeTab.domain,
-          isGranular
-        );
+      async remove(name) {
+        await browser.fppOverrides.remove(name);
 
         set((state) => {
-          delete state.targets[isGranular ? "granular" : "global"][name];
+          delete state.targets.overrides[name];
         });
       },
-      async clear(isGranular) {
-        await browser.fppOverrides.clear(get().activeTab.domain, isGranular);
+      async clear() {
+        await browser.fppOverrides.clear();
 
         set((state) => {
-          state.targets[isGranular ? "granular" : "global"] = {};
+          state.targets.overrides = {};
         });
       },
       clearInvalids() {
@@ -103,26 +82,12 @@ export default create<StateType>()(
       },
     },
     activeTab: {
-      domain: "",
-      async set(domain) {
-        const { global, granular } = await browser.fppOverrides.get(domain);
+      async set() {
+        const overrides = await browser.fppOverrides.get();
 
         set((state) => {
-          state.targets.global = global;
-          state.targets.granular = granular;
-          state.activeTab.domain = domain;
-
-          // We currently don't expose the granular override support.
-          // Add a notification if granular overrides are found.
-          if (Object.keys(granular).length !== 0) {
-            state.notifications.list.push({
-              id: "granular-overrides",
-              message:
-                "Granular overrides affecting this domain were found. The extension does not support them, and behavior may be unexpected.",
-              action: () => get().notifications.remove("granular-overrides"),
-              actionLabel: "Dismiss",
-            });
-          }
+          state.targets.overrides = overrides;
+          // TODO: Add a function to check if there is a granular override for the domain and add a notification if there is
         });
       },
     },
@@ -153,10 +118,7 @@ export default create<StateType>()(
       ready: false,
       message: "",
       range: [0, 0],
-      beginningTargets: {
-        global: {},
-        granular: {},
-      },
+      beginningTargets: {},
       isTroubleshooting() {
         const range = get().troubleshooter.range;
         return range[0] !== 0 || range[1] !== 0;
@@ -165,7 +127,7 @@ export default create<StateType>()(
         const range = await Storage.get("troubleshooterRange", [0, 0]);
         const beginningTargets = await Storage.get(
           "troubleshooterBeginningTargets",
-          { global: {}, granular: {} }
+          {}
         );
 
         set((state) => {
@@ -182,10 +144,7 @@ export default create<StateType>()(
         });
       },
       async saveBeginningTargets() {
-        const targets = {
-          global: get().targets.global,
-          granular: get().targets.granular,
-        };
+        const targets = get().targets.overrides;
         await Storage.set({ troubleshooterBeginningTargets: targets });
 
         set((state) => {
@@ -205,8 +164,7 @@ interface TargetState {
   targets: {
     ready: boolean;
     enabled: boolean;
-    global: Record<browser.fppOverrides.Target, boolean>;
-    granular: Record<browser.fppOverrides.Target, boolean>;
+    overrides: Record<browser.fppOverrides.Target, boolean>;
     defaults: Set<browser.fppOverrides.Target>;
     available: browser.fppOverrides.Target[];
     invalids: string[];
@@ -214,20 +172,18 @@ interface TargetState {
     load: () => Promise<void>;
     set: (
       target: browser.fppOverrides.Target,
-      enabled: boolean,
-      isGranular: boolean
+      enabled: boolean
     ) => Promise<void>;
-    setAll: (enabled: boolean, isGranular: boolean) => Promise<void>;
-    resetToDefaults: (isGranular: boolean) => Promise<void>;
-    remove: (name: string, isGranular: boolean) => Promise<void>;
-    clear: (isGranular: boolean) => Promise<void>;
+    setAll: (enabled: boolean) => Promise<void>;
+    resetToDefaults: () => Promise<void>;
+    remove: (name: string) => Promise<void>;
+    clear: () => Promise<void>;
     clearInvalids: () => void;
   };
 }
 
 interface ActiveTabState {
   activeTab: {
-    domain: string;
     set: (domain: string) => void;
   };
 }
@@ -259,10 +215,7 @@ interface TroubleshooterState {
     ready: boolean;
     message: string;
     range: [number, number];
-    beginningTargets: {
-      global: Record<browser.fppOverrides.Target, boolean>;
-      granular: Record<browser.fppOverrides.Target, boolean>;
-    };
+    beginningTargets: Record<browser.fppOverrides.Target, boolean>;
     isTroubleshooting(): boolean;
     load(): Promise<void>;
     setRange: (start: number, end: number) => Promise<void>;

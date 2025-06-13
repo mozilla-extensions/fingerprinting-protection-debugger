@@ -61,7 +61,7 @@ const OverridesHelper = {
     }
 
     const uri = Services.io.newURI("https://" + domain);
-    if (uri.displayHost !== domain) {
+    if (!uri || uri.displayHost !== domain) {
       throw new Error("Invalid domain");
     }
 
@@ -75,42 +75,15 @@ const OverridesHelper = {
       .map(([target, enabled]) => (enabled ? "+" : "-") + target)
       .join(",");
   },
-  // Filters negative targets IFF they are not in the default set
-  filterNegatives(targets) {
+  // Filters out targets that doesn't need to be included in the overrides string.
+  minimizeOverrides(targets) {
     return Object.fromEntries(
-      Object.entries(targets).filter(
-        ([t, enabled]) => DEFAULT_TARGETS.has(t) || enabled
-      )
-    );
-  },
-  // Parses a granular overrides string of the form '[{firstPartyDomain: "example.com", thirdPartyDomain: "*", overrides: "+target1,-target2"}]'
-  parseGranular: function (str) {
-    const entries = [];
-    if (!str || str.length === 0) {
-      return entries;
-    }
+      Object.entries(targets).filter(([t, enabled]) => {
+        if (DEFAULT_TARGETS.has(t)) {
+          return !enabled; // Only include if it's disabled.
+        }
 
-    const json = Utils.tryParseJSON(str, []);
-    for (const entry of json) {
-      const overrides = OverridesHelper.parse(entry.overrides).targets;
-      entries.push({
-        firstPartyDomain: entry.firstPartyDomain ?? "*",
-        thirdPartyDomain: entry.thirdPartyDomain ?? "*",
-        overrides: overrides,
-      });
-    }
-
-    return entries;
-  },
-  // Serializes a granular overrides array to a string
-  stringifyGranular(entries) {
-    return JSON.stringify(
-      entries.map((entry) => {
-        return {
-          firstPartyDomain: entry.firstPartyDomain,
-          thirdPartyDomain: entry.thirdPartyDomain,
-          overrides: OverridesHelper.stringify(entry.overrides),
-        };
+        return enabled;
       })
     );
   },
@@ -120,17 +93,6 @@ const OverridesHelper = {
       Object.fromEntries([...DEFAULT_TARGETS].map((t) => [t, true])),
       { ...overrides }
     );
-  },
-};
-
-const Utils = {
-  // Tries to parse a JSON string, returns the default value if it fails
-  tryParseJSON(str, defaultValue) {
-    try {
-      return JSON.parse(str);
-    } catch (e) {
-      return defaultValue;
-    }
   },
 };
 
@@ -172,65 +134,29 @@ const FPP_NAME = "fingerprintingProtection";
 const FPP_PREF = "privacy.fingerprintingProtection";
 const OVERRIDES_NAME = "fingerprintingProtection.overrides";
 const OVERRIDES_PREF = "privacy.fingerprintingProtection.overrides";
-const GRANULAR_OVERRIDES_NAME = "fingerprintingProtection.granularOverrides";
-const GRANULAR_OVERRIDES_PREF =
-  "privacy.fingerprintingProtection.granularOverrides";
 
 ExtensionPrefHelper.addSetting(OVERRIDES_NAME, OVERRIDES_PREF, "String");
 ExtensionPrefHelper.addSetting(FPP_NAME, FPP_PREF, "Bool");
-ExtensionPrefHelper.addSetting(
-  GRANULAR_OVERRIDES_NAME,
-  GRANULAR_OVERRIDES_PREF,
-  "String"
-);
 
 this.fppOverrides = class extends ExtensionAPI {
   getAPI(context) {
-    // Create pref APIs for the FPP, overrides, and granular overrides prefs
+    // Create pref API for the FPP and override prefs.
     const extAPI = (() => {
       const apis = ExtensionPrefHelper.getAPIs(context, [
         FPP_NAME,
         OVERRIDES_NAME,
-        GRANULAR_OVERRIDES_NAME,
       ]);
 
       return {
         fpp: apis[FPP_NAME],
         overrides: apis[OVERRIDES_NAME],
-        granular: apis[GRANULAR_OVERRIDES_NAME],
       };
     })();
 
-    const setTargetsByScope = async (overrides, domain, isGranular) => {
-      if (isGranular) {
-        const entries = await extAPI.granular
-          .get()
-          .then(OverridesHelper.parseGranular);
-        const entryI = entries.findIndex((e) => e.firstPartyDomain === domain);
-        if (entryI === -1) {
-          entries.push({
-            firstPartyDomain: domain,
-            thirdPartyDomain: "*",
-            overrides: {},
-          });
-        }
-
-        // Remove the entry the overrides are empty
-        const isEmpty = Object.keys(overrides).length === 0;
-        if (isEmpty) {
-          entries.splice(entryI === -1 ? entries.length - 1 : entryI, 1);
-          await extAPI.granular.set(OverridesHelper.stringifyGranular(entries));
-          return;
-        }
-
-        const entry = entries[entryI === -1 ? entries.length - 1 : entryI];
-        entry.overrides = overrides;
-        await extAPI.granular.set(OverridesHelper.stringifyGranular(entries));
-      } else {
-        await extAPI.overrides.set(
-          OverridesHelper.stringify(OverridesHelper.filterNegatives(overrides))
-        );
-      }
+    const setOverrides = async (overrides) => {
+      await extAPI.overrides.set(
+        OverridesHelper.stringify(OverridesHelper.minimizeOverrides(overrides))
+      );
     };
 
     return {
@@ -244,77 +170,45 @@ this.fppOverrides = class extends ExtensionAPI {
           return extAPI.fpp.get();
         },
         // Reads and parses privacy.fingerprintingProtection.overrides
-        async get(domain) {
-          OverridesHelper.validateDomain(domain);
-
-          const global = await extAPI.overrides
+        get() {
+          return extAPI.overrides
             .get()
             .then(OverridesHelper.parse)
             .then((r) => OverridesHelper.appendDefaults(r.targets));
-
-          const granular = await (async () => {
-            const entries = await extAPI.granular
-              .get()
-              .then(OverridesHelper.parseGranular);
-            const entry = entries.find((e) => e.firstPartyDomain === domain);
-            if (entry) {
-              return entry.overrides;
-            }
-            return {};
-          })();
-
-          return {
-            global,
-            granular,
-          };
         },
-        // Modifies global or granular overrides to enable or disable a target
-        async set(target, enabled, domain, isGranular) {
+        // Modifies overrides to enable or disable a target
+        async set(target, enabled) {
           OverridesHelper.validateTarget(target);
-          OverridesHelper.validateDomain(domain);
 
-          const overrides = await this.get(domain);
-          const targets = isGranular ? overrides.granular : overrides.global;
-          targets[target] = enabled;
+          const overrides = await this.get();
+          overrides[target] = enabled;
 
-          await setTargetsByScope(targets, domain, isGranular);
+          await setOverrides(overrides);
         },
         // Modifies overrides to enable or disable all of the targets
-        async setAll(enabled, domain, isGranular) {
-          OverridesHelper.validateDomain(domain);
-
+        async setAll(enabled) {
           const overrides = Object.fromEntries(
             [...TARGETS].map((t) => [t, enabled])
           );
 
-          await setTargetsByScope(overrides, domain, isGranular);
+          await setOverrides(overrides);
         },
         // Removes a target from the overrides. Unlike set, this function will not add -Target to overrides
-        async remove(target, domain, isGranular) {
+        async remove(target) {
           OverridesHelper.validateTarget(target);
-          OverridesHelper.validateDomain(domain);
 
-          const overrides = await this.get(domain);
-          const targets = isGranular ? overrides.granular : overrides.global;
-          delete targets[target];
+          const overrides = await this.get();
+          delete overrides[target];
 
-          await setTargetsByScope(targets, domain, isGranular);
+          await setOverrides(overrides);
         },
         // Clears all the overrides
-        async clear(domain, isGranular) {
-          OverridesHelper.validateDomain(domain);
-
-          await setTargetsByScope({}, domain, isGranular);
+        async clear() {
+          await setOverrides({});
         },
         // Modifies overrides to only enable defaults
-        async resetToDefaults(domain, isGranular) {
-          OverridesHelper.validateDomain(domain);
-
-          await setTargetsByScope(
-            OverridesHelper.appendDefaults({}),
-            domain,
-            isGranular
-          );
+        async resetToDefaults() {
+          await setOverrides(OverridesHelper.appendDefaults({}));
         },
         // Forgets the website
         async forgetWebsite(domain) {
