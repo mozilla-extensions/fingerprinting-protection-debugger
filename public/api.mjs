@@ -49,23 +49,23 @@ const OverridesHelper = {
       throw new Error("Invalid target");
     }
   },
-  // Validate domain and throw an error if it is invalid
+  // Validate domain and returns a URI object if valid, or null if invalid
   validateDomain(domain) {
     if (!domain || domain.length === 0) {
-      throw new Error("No domain");
+      return null;
     }
 
     if (domain === "*") {
-      return;
+      return null;
     }
 
     const uri = Services.io.newURI("https://" + domain);
     if (!uri || uri.displayHost !== domain) {
-      throw new Error("Invalid domain");
+      return null;
     }
 
     if (!uri.schemeIs("https")) {
-      throw new Error("Invalid spec");
+      return null;
     }
 
     return uri;
@@ -188,6 +188,10 @@ this.fppOverrides = class extends ExtensionAPI {
         // Calls Services.rfp.getFingerprintingOverrides and returns whether the domain has granular overrides or not.
         async hasGranular(domain) {
           const uri = OverridesHelper.validateDomain(domain);
+          if (uri === null) {
+            console.warn("Invalid domain provided to hasGranular, ignoring.");
+            return false;
+          }
           const baseDomain = Services.eTLD.getBaseDomain(uri);
 
           let overrides = null;
@@ -237,7 +241,10 @@ this.fppOverrides = class extends ExtensionAPI {
         },
         // Forgets the website
         async forgetWebsite(domain) {
-          OverridesHelper.validateDomain(domain);
+          if (OverridesHelper.validateDomain(domain) === null) {
+            console.warn("Invalid domain provided to forgetWebsite, ignoring.");
+            return;
+          }
 
           await ForgetAboutSite.removeDataFromBaseDomain(domain);
         },
