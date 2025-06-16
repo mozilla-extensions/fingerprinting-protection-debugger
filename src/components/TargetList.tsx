@@ -11,9 +11,7 @@ export default function TargetList() {
     .filter((name) => name.toLowerCase().includes(query.toLowerCase()))
     .map((name) => ({
       name,
-      global: targets.global[name] ?? false,
-      granular: targets.granular[name] ?? false,
-      isGranularlySet: targets.granular[name] !== undefined,
+      enabled: targets.overrides[name] ?? false,
       isDefault: targets.defaults.has(name),
     }));
 

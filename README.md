@@ -20,3 +20,19 @@ Currently, two targets are disabled:
 ### Targets with yellow background
 
 The yellow background indicate that target is enabled by default. Without `-<DefaultTargetName>` in overrides, they are enabled by default.
+
+### Websites with Granular Overrides
+It is possible to add granular overrides on Firefox. However, the extension doesn't support them. So, using them may lead to unexpected behavior. For that reason, we show a warning when the user tries to use the extension on a website with granular overrides. Here's what you need to know about these cases:
+
+#### What are granular overrides?
+Granular overrides are a way to enable or disable specific RFP targets for specific websites. They can be set through the `privacy.fingerprintingProtection.granularOverrides` preference. Sometimes, users set them, and sometimes we set them to prevent breakages on websites. So, it is possible for you to have an empty `privacy.fingerprintingProtection.granularOverrides` preference, but still have some targets enabled for specific websites.
+
+#### How to debug websites with granular overrides?
+To debug websites with granular overrides, we recommend the following steps:
+1. Open the `about:config` page in Firefox.
+1. Search for `privacy.fingerprintingProtection.granularOverrides`.
+1. Check if you have any overrides set for the website you are debugging. If you do, remove it temporarily, if not follow the next step.
+1. Search for `privacy.fingerprintingProtection.remoteOverrides.enabled`, and disable it temporarily.
+1. Restart Firefox.
+
+Now, you can use the extension to debug the website without any granular overrides interfering with the RFP targets. **Do not forget** to re-enable the `privacy.fingerprintingProtection.remoteOverrides.enabled` preference after you are done debugging. This will ensure that you are getting the latest webcompatibility fixes about RFP targets.

@@ -28,11 +28,11 @@ function StartButton() {
     const range: [number, number] = [0, targets.available.length - 1];
     await troubleshooter.setRange(range[0], range[1]);
     await troubleshooter.saveBeginningTargets();
-    await targets.setAll(false, false);
-    await targets.clear(true);
+    await targets.setAll(false);
+    await targets.clear();
     const newOverrides = half(range, targets.available, "top");
     for (const target of newOverrides) {
-      await targets.set(target, true, false);
+      await targets.set(target, true);
     }
   };
 
@@ -47,23 +47,22 @@ function StartButton() {
 }
 
 function NextButton() {
-  const [troubleshooter, targets, domain] = useStore((state) => [
+  const [troubleshooter, targets] = useStore((state) => [
     state.troubleshooter,
     state.targets,
-    state.activeTab.domain,
   ]);
 
   const setOverrides = async (newOverrides: browser.fppOverrides.Target[]) => {
-    await targets.setAll(false, false);
+    await targets.setAll(false);
     for (const target of newOverrides) {
-      await targets.set(target, true, false);
+      await targets.set(target, true);
     }
   };
 
   const onSolved = async () => {
     const direction =
-      whichHalf(troubleshooter.range, targets.available, targets.global) ===
-      "top"
+      whichHalf(troubleshooter.range, targets.available, targets.overrides) ===
+        "top"
         ? "bottom"
         : "top";
     const newOverrides = half(
@@ -88,7 +87,7 @@ function NextButton() {
     const direction = whichHalf(
       troubleshooter.range,
       targets.available,
-      targets.global
+      targets.overrides
     );
     const newRange = getRange(troubleshooter.range, direction);
     // Only one target was active previously and it is still not solved
@@ -98,10 +97,8 @@ function NextButton() {
       troubleshooter.range[1] - troubleshooter.range[0] === 1
     ) {
       troubleshooter.setMessage(
-        `Troubleshooting complete! ${
-          targets.available[troubleshooter.range[0]]
-        } and ${
-          targets.available[troubleshooter.range[1]]
+        `Troubleshooting complete! ${targets.available[troubleshooter.range[0]]
+        } and ${targets.available[troubleshooter.range[1]]
         } was causing the breakage.`
       );
       setTimeout(() => {
@@ -116,22 +113,22 @@ function NextButton() {
   };
 
   const onCancel = async () => {
-    await targets.setAll(false, false);
-    Object.entries(troubleshooter.beginningTargets.global).forEach(
+    await targets.setAll(false);
+    Object.entries(troubleshooter.beginningTargets).forEach(
       ([target, enabled]) => {
-        targets.set(target, enabled, false);
-      }
-    );
-    Object.entries(troubleshooter.beginningTargets.granular).forEach(
-      ([target, enabled]) => {
-        targets.set(target, enabled, true);
+        targets.set(target, enabled);
       }
     );
     await troubleshooter.setRange(0, 0);
   };
 
   const forgetWebsite = async () => {
-    await browser.fppOverrides.forgetWebsite(domain);
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    if (tabs.length === 0) {
+      return;
+    }
+    const url = new URL(tabs[0].url || "");
+    await browser.fppOverrides.forgetWebsite(url.hostname);
   };
 
   return (

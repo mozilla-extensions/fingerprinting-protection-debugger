@@ -14,25 +14,38 @@
         "type": "function",
         "description": "Returns privacy.fingerprintingProtection",
         "async": true,
-        "parameters": []
+        "parameters": [
+          {
+            "name": "incognito",
+            "type": "boolean",
+            "description": "If incognito is true, returns true if privacy.fingerprintingProtection.pbmode is enabled, otherwise falls back to privacy.fingerprintingProtection"
+          }
+        ]
       },
       {
         "name": "get",
         "type": "function",
         "description": "Reads and parses privacy.fingerprintingProtection.overrides",
         "async": true,
+        "parameters": []
+      },
+      {
+        "name": "hasGranular",
+        "type": "function",
+        "description": "Calls Services.rfp.getFingerprintingOverrides and returns whether the domain has granular overrides or not.",
+        "async": true,
         "parameters": [
           {
             "name": "domain",
             "type": "string",
-            "description": "Domain for the granular overrides"
+            "description": "Domain to get overrides for"
           }
         ]
       },
       {
         "name": "set",
         "type": "function",
-        "description": "Modifies global or granular overrides to enable or disable a target",
+        "description": "Modifies overrides to enable or disable a target",
         "async": true,
         "parameters": [
           {
@@ -44,16 +57,6 @@
             "name": "enabled",
             "type": "boolean",
             "description": "Determines whether we enable or disable it"
-          },
-          {
-            "name": "domain",
-            "type": "string",
-            "description": "Domain for the granular overrides"
-          },
-          {
-            "name": "isGranular",
-            "type": "boolean",
-            "description": "Determines whether we modify global or granular overrides"
           }
         ]
       },
@@ -67,16 +70,6 @@
             "name": "enabled",
             "type": "boolean",
             "description": "Determines whether we enable or disable"
-          },
-          {
-            "name": "domain",
-            "type": "string",
-            "description": "Domain for the granular overrides"
-          },
-          {
-            "name": "isGranular",
-            "type": "boolean",
-            "description": "Determines whether we modify global or granular overrides"
           }
         ]
       },
@@ -90,16 +83,6 @@
             "name": "target",
             "type": "string",
             "description": "A valid target name"
-          },
-          {
-            "name": "domain",
-            "type": "string",
-            "description": "Domain for the granular overrides"
-          },
-          {
-            "name": "isGranular",
-            "type": "boolean",
-            "description": "Determines whether we modify global or granular overrides"
           }
         ]
       },
@@ -108,36 +91,14 @@
         "type": "function",
         "description": "Clears all the overrides",
         "async": true,
-        "parameters": [
-          {
-            "name": "domain",
-            "type": "string",
-            "description": "Domain for the granular overrides"
-          },
-          {
-            "name": "isGranular",
-            "type": "boolean",
-            "description": "Determines whether we modify global or granular overrides"
-          }
-        ]
+        "parameters": []
       },
       {
         "name": "resetToDefaults",
         "type": "function",
         "description": "Modifies overrides to only enable defaults",
         "async": true,
-        "parameters": [
-          {
-            "name": "domain",
-            "type": "string",
-            "description": "Domain for the granular overrides"
-          },
-          {
-            "name": "isGranular",
-            "type": "boolean",
-            "description": "Determines whether we modify global or granular overrides"
-          }
-        ]
+        "parameters": []
       },
       {
         "name": "forgetWebsite",
@@ -155,7 +116,7 @@
       {
         "name": "invalids",
         "type": "function",
-        "description": "Validates the global overrides and returns unknown targets",
+        "description": "Validates the overrides and returns unknown targets",
         "async": true,
         "parameters": []
       },
