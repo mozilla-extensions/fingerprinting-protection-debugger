@@ -133,11 +133,14 @@ const ExtensionPrefHelper = {
 
 const FPP_NAME = "fingerprintingProtection";
 const FPP_PREF = "privacy.fingerprintingProtection";
+const FPP_PBM_NAME = "fingerprintingProtection.pbmode";
+const FPP_PBM_PREF = "privacy.fingerprintingProtection.pbmode";
 const OVERRIDES_NAME = "fingerprintingProtection.overrides";
 const OVERRIDES_PREF = "privacy.fingerprintingProtection.overrides";
 
 ExtensionPrefHelper.addSetting(OVERRIDES_NAME, OVERRIDES_PREF, "String");
 ExtensionPrefHelper.addSetting(FPP_NAME, FPP_PREF, "Bool");
+ExtensionPrefHelper.addSetting(FPP_PBM_NAME, FPP_PBM_PREF, "Bool");
 
 this.fppOverrides = class extends ExtensionAPI {
   getAPI(context) {
@@ -145,11 +148,13 @@ this.fppOverrides = class extends ExtensionAPI {
     const extAPI = (() => {
       const apis = ExtensionPrefHelper.getAPIs(context, [
         FPP_NAME,
+        FPP_PBM_NAME,
         OVERRIDES_NAME,
       ]);
 
       return {
         fpp: apis[FPP_NAME],
+        fppPrivateBrowsing: apis[FPP_PBM_NAME],
         overrides: apis[OVERRIDES_NAME],
       };
     })();
@@ -166,8 +171,11 @@ this.fppOverrides = class extends ExtensionAPI {
         async enable() {
           await extAPI.fpp.set(true);
         },
-        // Returns privacy.fingerprintingProtection
-        async enabled() {
+        // Returns privacy.fingerprintingProtection or privacy.fingerprintingProtection.pbmode if it is enabled and the incognito mode is enabled.
+        async enabled(incognito) {
+          if (incognito && extAPI.fppPrivateBrowsing.get()) {
+            return true;
+          }
           return extAPI.fpp.get();
         },
         // Reads and parses privacy.fingerprintingProtection.overrides

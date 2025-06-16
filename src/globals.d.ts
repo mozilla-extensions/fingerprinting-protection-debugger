@@ -5,7 +5,7 @@ declare global {
     namespace fppOverrides {
       type Target = string;
       function enable(): Promise<void>;
-      function enabled(): Promise<boolean>;
+      function enabled(incognito: boolean): Promise<boolean>;
       function get(): Promise<Record<Target, boolean>>;
       function hasGranular(domain: string): Promise<boolean>;
       function set(target: Target, enabled: boolean): Promise<void>;

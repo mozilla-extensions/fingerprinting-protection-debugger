@@ -14,7 +14,13 @@
         "type": "function",
         "description": "Returns privacy.fingerprintingProtection",
         "async": true,
-        "parameters": []
+        "parameters": [
+          {
+            "name": "incognito",
+            "type": "boolean",
+            "description": "If incognito is true, returns true if privacy.fingerprintingProtection.pbmode is enabled, otherwise falls back to privacy.fingerprintingProtection"
+          }
+        ]
       },
       {
         "name": "get",

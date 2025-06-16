@@ -18,7 +18,17 @@ export default create<StateType>()(
         });
       },
       async load() {
-        const enabled = await browser.fppOverrides.enabled();
+        const tabs = await browser.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+        if (tabs.length === 0) {
+          return;
+        }
+        const currentTab = tabs[0];
+        const enabled = await browser.fppOverrides.enabled(
+          currentTab.incognito
+        );
         const invalids = await browser.fppOverrides.invalids();
         const defaults = await browser.fppOverrides.defaults();
         const available = await browser.fppOverrides.available();
