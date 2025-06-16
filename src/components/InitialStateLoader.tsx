@@ -41,18 +41,7 @@ export default function InitialStateLoader() {
 
     const setActiveTabDomain = async (tab: browser.tabs.Tab) => {
       if (!tab.url) return;
-      const url = new URL(tab.url);
-      if (!["http:", "https:"].includes(url.protocol)) {
-        const id = "non-http";
-        notifications.add({
-          id,
-          message: "This extension only works on HTTP and HTTPS sites.",
-          action: () => notifications.remove(id),
-          actionLabel: "Dismiss",
-        });
-        return;
-      }
-      activeTab.set(url.hostname);
+      activeTab.set(new URL(tab.url));
     };
 
     browser.tabs

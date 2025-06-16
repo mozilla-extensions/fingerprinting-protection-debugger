@@ -7,6 +7,7 @@ declare global {
       function enable(): Promise<void>;
       function enabled(): Promise<boolean>;
       function get(): Promise<Record<Target, boolean>>;
+      function hasGranular(domain: string): Promise<boolean>;
       function set(target: Target, enabled: boolean): Promise<void>;
       function setAll(enabled: boolean): Promise<void>;
       function remove(name: string): Promise<void>;

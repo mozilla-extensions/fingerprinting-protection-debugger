@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import React from "react";
 
 export default create<StateType>()(
   immer((set, get) => ({
@@ -82,12 +83,43 @@ export default create<StateType>()(
       },
     },
     activeTab: {
-      async set() {
+      async set(url) {
         const overrides = await browser.fppOverrides.get();
+
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          get().notifications.add({
+            id: "non-http",
+            message: "This extension only works on HTTP and HTTPS sites.",
+            action: () => get().notifications.remove("non-http"),
+            actionLabel: "Dismiss",
+          });
+        }
+
+        const hasGranularOverrides = await browser.fppOverrides.hasGranular(
+          url.hostname
+        );
+        if (hasGranularOverrides) {
+          const granularOverridesSupportPage =
+            "https://github.com/mozilla-extensions/fingerprinting-protection-debugger/blob/main/README.md#websites-with-granular-overrides";
+          get().notifications.add({
+            id: "granular-overrides",
+            message: React.createElement(
+              "a",
+              {
+                key: "granular-overrides-link",
+                href: granularOverridesSupportPage,
+                target: "_blank",
+                rel: "noopener noreferrer",
+              },
+              "Granular overrides are set for this domain. Please refer to the documentation for more information."
+            ),
+            action: () => get().notifications.remove("granular-overrides"),
+            actionLabel: "Dismiss",
+          });
+        }
 
         set((state) => {
           state.targets.overrides = overrides;
-          // TODO: Add a function to check if there is a granular override for the domain and add a notification if there is
         });
       },
     },
@@ -184,7 +216,7 @@ interface TargetState {
 
 interface ActiveTabState {
   activeTab: {
-    set: (domain: string) => void;
+    set: (url: URL) => void;
   };
 }
 
@@ -197,7 +229,7 @@ interface BlockingMessageState {
 
 export type Notification = {
   id: string;
-  message: string;
+  message: string | React.ReactElement;
   action: () => void;
   actionLabel: string;
 };

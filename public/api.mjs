@@ -17,9 +17,8 @@ const DISABLED_TARGETS = new Set([
   "IsAlwaysEnabledForPrecompute",
   "AllTargets",
 ]);
-const TARGETS = new Set(Object.keys(RFPHelper.getTargets())).difference(
-  DISABLED_TARGETS
-);
+const TARGETS_ENUM = RFPHelper.getTargets();
+const TARGETS = new Set(Object.keys(TARGETS_ENUM)).difference(DISABLED_TARGETS);
 const DEFAULT_TARGETS = new Set(RFPHelper.getTargetDefaults());
 
 const OverridesHelper = {
@@ -68,6 +67,8 @@ const OverridesHelper = {
     if (!uri.schemeIs("https")) {
       throw new Error("Invalid spec");
     }
+
+    return uri;
   },
   // Serializes a map of targets to a string
   stringify(targets) {
@@ -175,6 +176,22 @@ this.fppOverrides = class extends ExtensionAPI {
             .get()
             .then(OverridesHelper.parse)
             .then((r) => OverridesHelper.appendDefaults(r.targets));
+        },
+        // Calls Services.rfp.getFingerprintingOverrides and returns whether the domain has granular overrides or not.
+        async hasGranular(domain) {
+          const uri = OverridesHelper.validateDomain(domain);
+          const baseDomain = Services.eTLD.getBaseDomain(uri);
+
+          let overrides = null;
+          try {
+            overrides = Services.rfp.getFingerprintingOverrides(
+              baseDomain + ",0"
+            );
+          } catch {
+            // getFingerprintingOverrides throws if there are no overrides for the domain.
+          }
+
+          return overrides !== null;
         },
         // Modifies overrides to enable or disable a target
         async set(target, enabled) {
